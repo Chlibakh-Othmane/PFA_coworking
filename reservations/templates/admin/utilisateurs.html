@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Liste des utilisateurs</h2>
+
+    <table class="table table-hover mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Inscription</th>
+                <th>Actions</th> 
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in utilisateurs %}
+                <tr>
+                    <td>{{ u.last_name }}</td>
+                    <td>{{ u.first_name }}</td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.get_role_display }}</td>
+                    <td>{{ u.dateInscription }}</td>
+                    <td>
+                        <a href="{% url 'modifier_role_utilisateur' u.id %}" class="btn btn-sm btn-warning">Modifier rôle</a>
+                        <a href="{% url 'supprimer_utilisateur' u.id %}" class="btn btn-sm btn-danger">Supprimer</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">Aucun utilisateur trouvé.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

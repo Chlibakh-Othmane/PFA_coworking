@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %} 
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">Espaces disponibles</h1>
+    
+    <div class="row">
+        {% for espace in espaces %}
+        <div class="col-md-4 mb-4">
+            <div class="card space-card h-100">
+                <!-- Photo avec animation -->
+                <div class="card-img-container">
+                    {% if espace.image %}
+                        <img src="{{ espace.image.url }}" class="card-img-top" alt="{{ espace.nom }}">
+                    {% else %}
+                        <img src="{% static 'img/default-space.jpg' %}" class="card-img-top" alt="Espace par défaut">
+                    {% endif %}
+                    <div class="card-img-overlay">
+                        <span class="badge bg-primary">{{ espace.tarif_par_heure }} DH/h</span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <h3 class="card-title">{{ espace.nom }}</h3>
+                    <p class="card-text">
+                        <i class="fas fa-users me-2"></i>Capacité : {{ espace.capacite }} personnes
+                    </p>
+                    
+                    <div class="equipements mb-3">
+                        <h6><i class="fas fa-tools me-2"></i>Équipements :</h6>
+                        <div class="d-flex flex-wrap">
+                            {% for equip in espace.equipements.split %}
+                            <span class="badge bg-secondary me-2 mb-2">{{ equip.strip }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white">
+                    <a href="{% url 'espace_detail' espace.id %}" class="btn btn-sm btn-outline-primary me-2">
+                        <i class="fas fa-eye"></i> Voir
+                    </a>
+                    {% if user.role == 'admin' %}
+                    <a href="{% url 'modifier_espace' espace.id %}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .space-card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .space-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .card-img-container {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .card-img-top {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .space-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+    
+    .card-img-overlay {
+        background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 100%);
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-start;
+    }
+    
+    .equipements {
+        max-height: 100px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}

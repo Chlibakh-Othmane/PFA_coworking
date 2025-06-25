@@ -1,0 +1,169 @@
+<form method="post" class="mt-4 form-animated">
+    {% csrf_token %}
+    
+    <div class="mb-4 form-floating floating-label-animation">
+        {{ form.date_debut }}
+        <label for="{{ form.date_debut.id_for_label }}">Date et heure de début</label>
+        <div class="form-icon">
+            <i class="far fa-calendar-alt"></i>
+        </div>
+    </div>
+    
+    <div class="mb-4 form-floating floating-label-animation">
+        {{ form.date_fin }}
+        <label for="{{ form.date_fin.id_for_label }}">Date et heure de fin</label>
+        <div class="form-icon">
+            <i class="far fa-calendar-alt"></i>
+        </div>
+    </div>
+    
+    <div class="d-grid">
+        <button type="submit" class="btn btn-success btn-submit-animation">
+            <span class="submit-text">Réserver</span>
+            <span class="submit-icon">
+                <i class="fas fa-arrow-right"></i>
+            </span>
+        </button>
+    </div>
+</form>
+
+<style>
+    /* Style général du formulaire */
+    .form-animated {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 30px;
+        border-radius: 12px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .form-animated:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    }
+    
+    /* Style des champs de formulaire */
+    .form-floating {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-floating input {
+        height: 60px;
+        padding: 1rem 1rem 1rem 50px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+    }
+    
+    .form-floating input:focus {
+        border-color: #4a6491;
+        box-shadow: 0 0 0 3px rgba(74, 100, 145, 0.2);
+        background-color: white;
+    }
+    
+    .form-floating label {
+        position: absolute;
+        top: 20px;
+        left: 50px;
+        color: #6c757d;
+        transition: all 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .form-floating input:focus + label,
+    .form-floating input:not(:placeholder-shown) + label {
+        top: 8px;
+        left: 50px;
+        font-size: 0.8rem;
+        color: #4a6491;
+        background: white;
+        padding: 0 5px;
+    }
+    
+    /* Icônes dans les champs */
+    .form-icon {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .form-floating input:focus ~ .form-icon {
+        color: #4a6491;
+        transform: scale(1.1);
+    }
+    
+    /* Bouton de soumission */
+    .btn-submit-animation {
+        height: 50px;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #28a745, #5cb85c);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 30px;
+    }
+    
+    .submit-text {
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .submit-icon {
+        position: absolute;
+        right: 20px;
+        opacity: 0;
+        transform: translateX(-10px);
+        transition: all 0.3s ease;
+        z-index: 2;
+    }
+    
+    .btn-submit-animation:hover .submit-text {
+        transform: translateX(-10px);
+    }
+    
+    .btn-submit-animation:hover .submit-icon {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    .btn-submit-animation::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #218838, #4cae4c);
+        transition: all 0.4s ease;
+        z-index: 1;
+    }
+    
+    .btn-submit-animation:hover::before {
+        left: 0;
+    }
+    
+    /* Animation pour les labels */
+    @keyframes floatLabel {
+        0% { transform: translateY(0); opacity: 1; }
+        50% { transform: translateY(-5px); opacity: 0.8; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    
+    .floating-label-animation:focus-within label {
+        animation: floatLabel 1.5s ease infinite;
+    }
+</style>
+
+<!-- Ajouter Font Awesome pour les icônes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

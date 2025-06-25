@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Espaces disponibles</h1>
+
+    {% if not user.is_authenticated %}
+        <a href="{% url 'register' %}" class="btn btn-primary mb-3">S'inscrire</a>
+    {% endif %}
+
+    {% if espaces %}
+        <div class="row">
+            {% for espace in espaces %}
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ espace.nom }}</h5>
+                            <p><strong>Capacité :</strong> {{ espace.capacite }}</p>
+                            <p><strong>Tarif :</strong> {{ espace.tarif_par_heure }} DH/h</p>
+                            <p><strong>Équipements :</strong> {{ espace.equipements }}</p>
+
+                            {% if user.is_authenticated %}
+                                {% if user.role == "membre" %}  <!-- Utilisation de guillemets doubles -->
+                                    <a href="{% url 'reserver' espace.id %}" class="btn btn-success">Réserver</a>
+                                {% elif user.role == "admin" %}  <!-- elif au lieu de elifequal -->
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'modifier_espace' espace.id %}" class="btn btn-warning">Modifier</a>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">Aucun espace disponible pour le moment.</p>
+    {% endif %}
+
+    {% if user.is_authenticated and user.role == "admin" %}  <!-- Guillemets doubles ici aussi -->
+        <div class="mt-4">
+            <a href="{% url 'ajouter_espace' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-1"></i> Ajouter un nouvel espace
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

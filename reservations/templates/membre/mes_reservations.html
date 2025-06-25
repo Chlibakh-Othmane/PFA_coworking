@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Mes Réservations</h2>
+
+    {% if reservations %}
+        <table class="table table-bordered mt-3">
+            <thead class="table-light">
+                <tr>
+                    <th>Espace</th>
+                    <th>Date de début</th>
+                    <th>Date de fin</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.espace.nom }}</td>
+                        <td>{{ reservation.date_debut }}</td>
+                        <td>{{ reservation.date_fin }}</td>
+                        <td>{{ reservation.statut }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info mt-3">
+            Vous n'avez encore effectué aucune réservation.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

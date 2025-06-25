@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Modifier le rôle de {{ utilisateur.first_name }} {{ utilisateur.last_name }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="role">Nouveau rôle :</label>
+            <select name="role" id="role" class="form-control">
+                <option value="membre" {% if utilisateur.role == 'membre' %}selected{% endif %}>Membre</option>
+                <option value="admin" {% if utilisateur.role == 'admin' %}selected{% endif %}>Admin</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success mt-3">Enregistrer</button>
+        <a href="{% url 'admin_utilisateurs' %}" class="btn btn-secondary mt-3">Annuler</a>
+    </form>
+</div>
+{% endblock %}

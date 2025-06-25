@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Tableau de bord Administrateur</h2>
+
+    <div class="row text-center">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Réservations</h5>
+                    <p class="card-text display-6">{{ total_reservations }}</p>
+                    <a href="{% url 'admin_reservations' %}" class="btn btn-outline-primary">Voir</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Utilisateurs</h5>
+                    <p class="card-text display-6">{{ total_utilisateurs }}</p>
+                    <a href="{% url 'admin_utilisateurs' %}" class="btn btn-outline-success">Voir</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Événements</h5>
+                    <p class="card-text display-6">{{ total_evenements }}</p>
+                    <a href="{% url 'admin_evenements' %}" class="btn btn-outline-warning">Voir</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Escpaces</h5>
+                    <p class="card-text display-6">{{ total_espaces }}</p>
+                    <a href="{% url 'accueil' %}" class="btn btn-outline-warning">Voir</a>
+                </div>
+            </div>
+       </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Profil Administrateur</h2>
+    <div class="card p-3">
+        <p><strong>Prénom :</strong> {{ utilisateur.first_name }}</p>
+        <p><strong>Nom :</strong> {{ utilisateur.last_name }}</p>
+        <p><strong>Email :</strong> {{ utilisateur.email }}</p>
+        <p><strong>Date d'inscription :</strong> {{ utilisateur.dateInscription }}</p>
+        <p><strong>Rôle :</strong> {{ utilisateur.get_role_display }}</p>
+
+        {% if utilisateur.photoProfil %}
+            <img src="{{ utilisateur.photoProfil.url }}" alt="Photo de profil" class="img-thumbnail" width="200">
+        {% else %}
+            <p>Aucune photo de profil</p>
+        {% endif %}
+    </div>
+    <a href="{% url 'modifier_profil_admin' %}" class="btn btn-primary mt-3">Modifier mon profil</a>
+</div>
+{% endblock %}

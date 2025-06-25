@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import uuid
-
+from django.contrib.auth.models import AbstractUser
 class Disponibilite(models.Model):
     date = models.DateField()
     heure_debut = models.TimeField()
@@ -11,6 +11,15 @@ class Disponibilite(models.Model):
 
     def __str__(self):
         return f"{self.date} ({self.heure_debut} - {self.heure_fin})"
+class Avis(models.Model):
+    membre = models.ForeignKey('Utilisateur', on_delete=models.CASCADE, limit_choices_to={'role': 'membre'})
+    espace = models.ForeignKey('Espace', on_delete=models.CASCADE, related_name='avis')
+    note = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # note de 1 à 5
+    commentaire = models.TextField(blank=True)
+    date_creation = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Avis de {self.membre.username} sur {self.espace.nom} - {self.note}/5"
 
 class Espace(models.Model):
     nom = models.CharField(max_length=100)
@@ -18,6 +27,9 @@ class Espace(models.Model):
     equipements = models.TextField(help_text="Liste des équipements, séparés par des virgules")
     tarif_par_heure = models.DecimalField(max_digits=10, decimal_places=2)
     disponibilites = models.ManyToManyField('Disponibilite', related_name='espaces')
+    image = models.ImageField(upload_to='espaces/', blank=True, null=True)
+    note_moyenne = models.FloatField(default=0.0)
+    nombre_avis = models.IntegerField(default=0)
 
     def __str__(self):
         return self.nom
@@ -84,20 +96,27 @@ class ServiceRestauration(Service):
     def __str__(self):
         return f"{self.nom} ({self.get_type_repas_display()})"
 
-class Utilisateur(models.Model):
-    nom = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    motDePasseHash = models.CharField(max_length=255)
+class Utilisateur(AbstractUser):
+    class Role(models.TextChoices):
+        MEMBRE = 'membre', 'Membre'
+        ADMIN = 'admin', 'Administrateur'
+
+    # CHAMPS SUPPLÉMENTAIRES UNIQUEMENT
+    role = models.CharField(max_length=10, choices=Role.choices, default=Role.MEMBRE)
     photoProfil = models.ImageField(upload_to="photos/", blank=True, null=True)
     dateInscription = models.DateTimeField(default=timezone.now)
     tentativesConnexion = models.IntegerField(default=0)
     estBloque = models.BooleanField(default=False)
+    email = models.EmailField(unique=True)
 
-    def authentifier(self, mot_de_passe):
-        return check_password(mot_de_passe, self.motDePasseHash)
+    # On change le champ d'identifiant
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+    def est_admin(self):
+        return self.role == self.Role.ADMIN
 
     def reinitialiserMotDePasse(self, nouveau_mot_de_passe):
-        self.motDePasseHash = make_password(nouveau_mot_de_passe)
+        self.set_password(nouveau_mot_de_passe)
         self.save()
 
     def ajouterPhotoProfil(self, photo):
@@ -112,7 +131,6 @@ class Utilisateur(models.Model):
 
     def recevoirNotification(self, message, notification_type="info", request=None):
         print(f"[Notification {notification_type.upper()}] pour {self.email}: {message}")
-
         if request:
             from django.contrib import messages
             niveau = {
@@ -121,24 +139,20 @@ class Utilisateur(models.Model):
                 "warning": messages.WARNING,
                 "error": messages.ERROR
             }.get(notification_type, messages.INFO)
-
             messages.add_message(request, niveau, f"Notification: {message}")
 
     def __str__(self):
-        return self.nom
-
-class Membre(Utilisateur):
-    pass  # à compléter selon ton projet
+        return self.get_full_name() or self.username
 
 class Reservation(models.Model):
     date_debut = models.DateTimeField()
     date_fin = models.DateTimeField()
     statut = models.CharField(max_length=20, choices=StatutReservation.choices, default=StatutReservation.EN_ATTENTE)
-    montant_total = models.FloatField(default=0.0)
+    montant_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     qr_code = models.CharField(max_length=255, blank=True)
     reduction_pourcent = models.FloatField(default=0.0)
     services_utilises = models.ManyToManyField(Service, blank=True)
-    membre = models.ForeignKey(Membre, on_delete=models.CASCADE)
+    membre = models.ForeignKey('Utilisateur', on_delete=models.CASCADE, limit_choices_to={'role': 'membre'})
     espace = models.ForeignKey(Espace, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -190,9 +204,9 @@ class Evenement(models.Model):
     date_fin = models.DateTimeField()
     statut = models.CharField(max_length=20, choices=StatutEvenement.choices, default=StatutEvenement.EN_ATTENTE)
     capacite_max = models.PositiveIntegerField(default=20)
-    organisateur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    organisateur = models.ForeignKey('Utilisateur', on_delete=models.CASCADE)
     reservations = models.ManyToManyField(Reservation, blank=True)
-    participants = models.ManyToManyField(Utilisateur, blank=True, related_name="evenements_participes")
+    participants = models.ManyToManyField('Utilisateur', blank=True, related_name="evenements_participes")
     services = models.ManyToManyField(Service, blank=True, related_name="espaces")
 
     def __str__(self):
@@ -225,72 +239,4 @@ class Evenement(models.Model):
             return True
         return False
 
-class Administrateur(Utilisateur):
-    role = models.CharField(max_length=50, default="Administrateur")
 
-    def ajouter_espace(self, nom, capacite, equipements, tarif_par_heure):
-        return Espace.objects.create(
-            nom=nom,
-            capacite=capacite,
-            equipements=equipements,
-            tarif_par_heure=tarif_par_heure
-        )
-
-    def supprimer_espace(self, espace_id):
-        try:
-            espace = Espace.objects.get(id=espace_id)
-            espace.delete()
-            return True
-        except Espace.DoesNotExist:
-            return False
-
-    def modifier_espace(self, espace_id, **kwargs):
-        try:
-            espace = Espace.objects.get(id=espace_id)
-            for attr, value in kwargs.items():
-                setattr(espace, attr, value)
-            espace.save()
-            return True
-        except Espace.DoesNotExist:
-            return False
-
-    def reservations_a_venir(self):
-        now = timezone.now()
-        return Reservation.objects.filter(date_debut__gte=now, statut=StatutReservation.EN_ATTENTE)
-
-    def approuver_reservation(self, reservation_id):
-        try:
-            reservation = Reservation.objects.get(id=reservation_id)
-            reservation.statut = StatutReservation.APPROUVEE
-            reservation.save()
-            return True
-        except Reservation.DoesNotExist:
-            return False
-
-    def annuler_reservation(self, reservation_id):
-        try:
-            reservation = Reservation.objects.get(id=reservation_id)
-            reservation.statut = StatutReservation.ANNULEE
-            reservation.save()
-            return True
-        except Reservation.DoesNotExist:
-            return False
-
-    def modifier_reservation(self, reservation_id, **kwargs):
-        try:
-            reservation = Reservation.objects.get(id=reservation_id)
-            for attr, value in kwargs.items():
-                setattr(reservation, attr, value)
-            reservation.save()
-            return True
-        except Reservation.DoesNotExist:
-            return False
-
-    def reservations_passees(self):
-        now = timezone.now()
-        return Reservation.objects.filter(date_fin__lt=now)
-
-    def attribuer_abonnement(self, membre_id, nom_abonnement, date_debut, date_fin):
-        # À remplacer par ta classe Abonnement si elle existe
-        print(f"Attribution de l'abonnement '{nom_abonnement}' à l'utilisateur {membre_id}")
-        return True

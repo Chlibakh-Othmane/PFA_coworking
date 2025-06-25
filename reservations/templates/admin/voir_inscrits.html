@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Inscrits à l'événement : {{ evenement.titre }}</h2>
+
+    {% if inscrits %}
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>profile</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inscrit in inscrits %}
+    <tr>
+        <td>{{ inscrit.first_name }} {{ inscrit.last_name }}</td>
+        <td>{{ inscrit.email }}</td>
+        <td>{% if inscrit.photoProfil %}
+            <img src="{{ inscrit.photoProfil.url }}" alt="Photo de {{ inscrit.first_name }}" width="50" height="50" style="border-radius: 50%;">
+        {% else %}
+            <span>Pas de photo</span>
+        {% endif %}
+        </td>  
+    </tr>
+         {% empty %}
+    <tr><td colspan="3">Aucun inscrit pour l’instant.</td></tr>
+         {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun inscrit pour le moment.</p>
+    {% endif %}
+
+    <a href="{% url 'liste_evenements' %}" class="btn btn-secondary mt-3">Retour</a>
+</div>
+{% endblock %}

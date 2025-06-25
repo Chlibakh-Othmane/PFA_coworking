@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    /* Animation pour les lignes du tableau */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .table tbody tr {
+        animation: fadeIn 0.5s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    /* Délai progressif pour chaque ligne */
+    .table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+    .table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+    .table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+    .table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+    .table tbody tr:nth-child(5) { animation-delay: 0.5s; }
+    
+    /* Style amélioré pour le tableau */
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .table thead {
+        background: linear-gradient(135deg, #2c3e50, #4a6491);
+    }
+    
+    .table th {
+        color: white;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(74, 100, 145, 0.05);
+        transform: scale(1.01);
+        transition: all 0.2s ease;
+    }
+    
+    /* Boutons avec effets */
+    .btn {
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #28a745, #5cb85c);
+        border: none;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545, #e35d6a);
+        border: none;
+    }
+    
+    .btn-info {
+        background: linear-gradient(135deg, #17a2b8, #5bc0de);
+        border: none;
+    }
+    
+    /* Badges modernes */
+    .badge {
+        padding: 6px 10px;
+        font-weight: 500;
+        border-radius: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Titre avec effet */
+    h2 {
+        color: #2c3e50;
+        position: relative;
+        padding-bottom: 10px;
+        margin-bottom: 30px;
+    }
+    
+    h2:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #4a6491, #28a745);
+        border-radius: 2px;
+    }
+    
+    /* Message vide */
+    .empty-message {
+        text-align: center;
+        padding: 20px;
+        color: #6c757d;
+        font-style: italic;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 0.7; }
+        50% { opacity: 1; }
+        100% { opacity: 0.7; }
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Liste des événements</h2>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Catégorie</th>
+                    <th>Date début</th>
+                    <th>Date fin</th>
+                    <th>Capacité max</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for evenement in evenements %}
+                    <tr>
+                        <td class="fw-semibold">{{ evenement.titre }}</td>
+                        <td>{{ evenement.description|truncatechars:50 }}</td>
+                        <td><span class="badge bg-secondary">{{ evenement.categorie }}</span></td>
+                        <td>{{ evenement.date_debut|date:"d/m/Y H:i" }}</td>
+                        <td>{{ evenement.date_fin|date:"d/m/Y H:i" }}</td>
+                        <td class="text-center">{{ evenement.capacite_max }}</td>
+                        <td>
+                            {% if evenement.statut == 'valide' %}
+                                <span class="badge bg-success pulse-animation">Validé</span>
+                            {% elif evenement.statut == 'annule' %}
+                                <span class="badge bg-danger">Annulé</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% endif %}
+                        </td>
+                        <td class="d-flex flex-wrap gap-2">
+                            {% if evenement.statut == 'en_attente' %}
+                                <form method="post" action="{% url 'valider_evenement' evenement.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="fas fa-check-circle me-1"></i> Valider
+                                    </button>
+                                </form>
+                            {% endif %}
+                            
+                            <form method="post" action="{% url 'supprimer_evenement' evenement.id %}" onsubmit="return confirm('Confirmer la suppression ?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash-alt me-1"></i> Supprimer
+                                </button>
+                            </form>
+
+                            <form method="get" action="{% url 'voir_inscrits' evenement.id %}">
+                                <button type="submit" class="btn btn-info btn-sm">
+                                    <i class="fas fa-users me-1"></i> Inscrits
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="empty-message">Aucun événement pour l'instant.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Font Awesome pour les icônes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+    // Animation supplémentaire pour les badges "Validé"
+    document.addEventListener('DOMContentLoaded', function() {
+        const validBadges = document.querySelectorAll('.badge.bg-success');
+        
+        validBadges.forEach(badge => {
+            badge.classList.add('pulse-animation');
+        });
+    });
+</script>
+
+<style>
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+</style>
+{% endblock %}

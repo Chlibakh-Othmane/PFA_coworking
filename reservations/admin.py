@@ -7,12 +7,9 @@ from .models import (
     ServiceMateriel,
     ServiceRestauration,
     Utilisateur,
-    Membre,
-    Administrateur,
     Evenement
 )
 
-# Pour avoir une meilleure vue dans l'interface admin
 @admin.register(Espace)
 class EspaceAdmin(admin.ModelAdmin):
     list_display = ("nom", "capacite", "tarif_par_heure")
@@ -44,20 +41,12 @@ class ServiceRestaurationAdmin(admin.ModelAdmin):
 
 @admin.register(Utilisateur)
 class UtilisateurAdmin(admin.ModelAdmin):
-    list_display = ("nom", "email", "estBloque", "dateInscription")
+    list_display = ("first_name", "email", "role", "estBloque", "dateInscription")
+    list_filter = ("role", "estBloque")
     search_fields = ("nom", "email")
-
-@admin.register(Membre)
-class MembreAdmin(admin.ModelAdmin):
-    list_display = ("nom", "email")
-
-@admin.register(Administrateur)
-class AdminAdmin(admin.ModelAdmin):
-    list_display = ("nom", "email", "role")
 
 @admin.register(Evenement)
 class EvenementAdmin(admin.ModelAdmin):
     list_display = ("titre", "categorie", "date_debut", "date_fin", "statut")
     list_filter = ("statut", "categorie")
     search_fields = ("titre", "description")
-

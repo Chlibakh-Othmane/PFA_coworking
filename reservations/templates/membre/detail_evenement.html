@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ evenement.titre }}</h2>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Description</h5>
+            <p class="card-text">{{ evenement.description }}</p>
+
+            <p><strong>Catégorie :</strong> {{ evenement.categorie }}</p>
+            <p><strong>Date début :</strong> {{ evenement.date_debut|date:"d/m/Y H:i" }}</p>
+            <p><strong>Date fin :</strong> {{ evenement.date_fin|date:"d/m/Y H:i" }}</p>
+            <p><strong>Capacité maximale :</strong> {{ evenement.capacite_max }}</p>
+            <p><strong>Statut :</strong> 
+                {% if evenement.statut == 'valide' %}
+                    <span class="badge bg-success">Validé</span>
+                {% elif evenement.statut == 'annule' %}
+                    <span class="badge bg-danger">Annulé</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">En attente</span>
+                {% endif %}
+            </p>
+            {% if evenement.lieu %}
+                <p><strong>Lieu :</strong> {{ evenement.lieu }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{% url 'liste_evenements' %}" class="btn btn-secondary mt-3">Retour à la liste</a>
+</div>
+{% endblock %}

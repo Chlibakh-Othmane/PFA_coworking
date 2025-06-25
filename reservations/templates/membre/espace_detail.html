@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ espace.nom }}</h2>
+    <p><strong>Capacité :</strong> {{ espace.capacite }}</p>
+    <p><strong>Tarif par heure :</strong> {{ espace.tarif_par_heure }} MAD</p>
+    <a href="{% url 'reserver' espace.id %}" class="btn btn-primary mt-3">Réserver cet espace</a>
+</div>
+{% endblock %}

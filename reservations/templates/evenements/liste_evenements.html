@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Liste des événements</h1>
+
+{% if evenements %}
+    <ul class="list-group">
+    {% for evenement in evenements %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ evenement.titre }}</strong> — du {{ evenement.date_debut }} au {{ evenement.date_fin }}
+                {% if user.est_admin %}
+                    <span class="badge bg-secondary">{{ evenement.statut }}</span>
+                {% endif %}
+            </div>
+            <div>
+                <a href="{% url 'detail_evenement' evenement.id %}" class="btn btn-primary btn-sm">Voir</a>
+                {% if user.est_admin and evenement.statut|lower != 'valide' %}
+                <form method="post" action="{% url 'valider_evenement' evenement.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">Valider</button>
+                </form>
+                {% endif %}
+
+                {% if not user.est_admin and evenement.statut|lower  == 'valide' %}
+                    <a href="{% url 'inscription_evenement' evenement.id %}" class="btn btn-outline-primary btn-sm">S'inscrire</a>
+                {% endif %}
+            </div>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>Aucun événement disponible.</p>
+{% endif %}
+{% endblock %}
