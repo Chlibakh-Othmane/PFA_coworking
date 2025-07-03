@@ -4,12 +4,15 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import uuid
 from django.contrib.auth.models import AbstractUser
+from decimal import Decimal 
+from django.conf import settings
+
 class Disponibilite(models.Model):
     date = models.DateField()
     heure_debut = models.TimeField()
     heure_fin = models.TimeField()
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.date} ({self.heure_debut} - {self.heure_fin})"
 class Avis(models.Model):
     membre = models.ForeignKey('Utilisateur', on_delete=models.CASCADE, limit_choices_to={'role': 'membre'})
@@ -18,7 +21,7 @@ class Avis(models.Model):
     commentaire = models.TextField(blank=True)
     date_creation = models.DateTimeField(default=timezone.now)
 
-    def __str__(self):
+    def _str_(self):
         return f"Avis de {self.membre.username} sur {self.espace.nom} - {self.note}/5"
 
 class Espace(models.Model):
@@ -31,7 +34,7 @@ class Espace(models.Model):
     note_moyenne = models.FloatField(default=0.0)
     nombre_avis = models.IntegerField(default=0)
 
-    def __str__(self):
+    def _str_(self):
         return self.nom
 
     def est_disponible(self, date_debut, date_fin):
@@ -93,7 +96,7 @@ class ServiceRestauration(Service):
     ]
     type_repas = models.CharField(max_length=20, choices=TYPE_REPAS_CHOICES)
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.nom} ({self.get_type_repas_display()})"
 
 class Utilisateur(AbstractUser):
@@ -141,7 +144,7 @@ class Utilisateur(AbstractUser):
             }.get(notification_type, messages.INFO)
             messages.add_message(request, niveau, f"Notification: {message}")
 
-    def __str__(self):
+    def _str_(self):
         return self.get_full_name() or self.username
 
 class Reservation(models.Model):
@@ -154,28 +157,42 @@ class Reservation(models.Model):
     services_utilises = models.ManyToManyField(Service, blank=True)
     membre = models.ForeignKey('Utilisateur', on_delete=models.CASCADE, limit_choices_to={'role': 'membre'})
     espace = models.ForeignKey(Espace, on_delete=models.CASCADE)
-
-    def __str__(self):
+    payee = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=False)
+    def _str_(self):
         return f"Réservation #{self.id} - {self.espace.nom}"
-
+    def duree(self):
+        duree_sec = (self.date_fin - self.date_debut).total_seconds()
+        duree_heure = duree_sec / 3600
+        return round(duree_heure, 2)
     def appliquer_reduction(self):
         self.montant_total *= (1 - self.reduction_pourcent / 100)
         self.save()
 
     def calculer_montant(self):
-        duree_heures = (self.date_fin - self.date_debut).total_seconds() / 3600
-        self.montant_total = round(self.espace.tarif_par_heure * duree_heures, 2)
+        duree_heures = Decimal((self.date_fin - self.date_debut).total_seconds()) / Decimal(3600)
+        self.montant_total = Decimal(self.espace.tarif_par_heure) * duree_heures.quantize(Decimal('0.01'))
         self.save()
         return self.montant_total
 
     def calculer_montant_total(self):
-        montant = self.calculer_montant()
+        """Calcule le montant total avec services"""
+        montant = self.calculer_montant()  # Montant de base
+        
+        # Ajout des services en conservant le type Decimal
         for service in self.services_utilises.all():
             if service.est_payant():
-                montant += float(service.prix)
-        self.montant_total = montant
+                montant += Decimal(str(service.prix))  # Conversion propre en Decimal
+        
+        self.montant_total = montant.quantize(Decimal('0.00'))
         self.save()
-        return montant
+        return self.montant_total
+
+    @property
+    def duree_heures(self):
+        """Propriété pour afficher la durée en heures dans le template"""
+        delta = self.date_fin - self.date_debut
+        return round(delta.total_seconds() / 3600, 2)
 
     def annuler(self):
         self.statut = StatutReservation.ANNULEE
@@ -207,9 +224,9 @@ class Evenement(models.Model):
     organisateur = models.ForeignKey('Utilisateur', on_delete=models.CASCADE)
     reservations = models.ManyToManyField(Reservation, blank=True)
     participants = models.ManyToManyField('Utilisateur', blank=True, related_name="evenements_participes")
-    services = models.ManyToManyField(Service, blank=True, related_name="espaces")
-
-    def __str__(self):
+    services = models.CharField(max_length=255, blank=True, help_text="Liste des services séparés par des virgules")
+    prix = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    def _str_(self):
         return self.titre
 
     def est_actif(self):
@@ -238,5 +255,11 @@ class Evenement(models.Model):
             self.participants.remove(utilisateur)
             return True
         return False
+class InscriptionEvenement(models.Model):
+    evenement = models.ForeignKey('Evenement', on_delete=models.CASCADE)
+    utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    date_inscription = models.DateTimeField(auto_now_add=True)
+    paiement_effectue = models.BooleanField(default=False)
 
-
+    def __str__(self):
+        return f"{self.utilisateur.username} -> {self.evenement.titre}"

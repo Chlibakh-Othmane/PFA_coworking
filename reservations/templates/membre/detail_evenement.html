@@ -1,32 +1,156 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>{{ evenement.titre }}</h2>
-
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5 class="card-title">Description</h5>
-            <p class="card-text">{{ evenement.description }}</p>
-
-            <p><strong>Catégorie :</strong> {{ evenement.categorie }}</p>
-            <p><strong>Date début :</strong> {{ evenement.date_debut|date:"d/m/Y H:i" }}</p>
-            <p><strong>Date fin :</strong> {{ evenement.date_fin|date:"d/m/Y H:i" }}</p>
-            <p><strong>Capacité maximale :</strong> {{ evenement.capacite_max }}</p>
-            <p><strong>Statut :</strong> 
-                {% if evenement.statut == 'valide' %}
-                    <span class="badge bg-success">Validé</span>
-                {% elif evenement.statut == 'annule' %}
-                    <span class="badge bg-danger">Annulé</span>
-                {% else %}
-                    <span class="badge bg-warning text-dark">En attente</span>
-                {% endif %}
-            </p>
-            {% if evenement.lieu %}
-                <p><strong>Lieu :</strong> {{ evenement.lieu }}</p>
-            {% endif %}
-        </div>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-10 px-4 sm:px-6 lg:px-8 animate_animated animate_fadeIn">
+  <div class="max-w-4xl mx-auto">
+    <!-- En-tête avec animation -->
+    <div class="text-center mb-10 animate_animated animate_fadeInDown">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">{{ evenement.titre }}</h1>
+      <div class="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mb-4"></div>
+      
+      <!-- Badge de statut animé -->
+      <div class="inline-block animate_animated animatepulse animate_infinite">
+        {% if evenement.statut == 'valide' %}
+          <span class="px-4 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 shadow-md">
+            <i class="fas fa-check-circle mr-1"></i> Validé
+          </span>
+        {% elif evenement.statut == 'annule' %}
+          <span class="px-4 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 shadow-md">
+            <i class="fas fa-times-circle mr-1"></i> Annulé
+          </span>
+        {% else %}
+          <span class="px-4 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800 shadow-md animate_animated animate_pulse">
+            <i class="fas fa-clock mr-1"></i> En attente
+          </span>
+        {% endif %}
+      </div>
     </div>
 
-    <a href="{% url 'liste_evenements' %}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    <!-- Carte principale avec animation -->
+    <div class="bg-white rounded-xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-2xl animate_animated animate_fadeInUp">
+      <!-- Image de l'événement -->
+      <div class="h-64 overflow-hidden">
+        {% if evenement.categorie == 'conference' %}
+          <img src="https://images.unsplash.com/photo-1431540015161-0bf868a2d407?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+               alt="Conférence" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110">
+        {% elif evenement.categorie == 'formation' %}
+          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+               alt="Formation" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110">
+        {% else %}
+          <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
+               alt="Événement" class="w-full h-full object-cover transition-transform duration-700 hover:scale-110">
+        {% endif %}
+      </div>
+
+      <!-- Contenu de la carte -->
+      <div class="p-6 sm:p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+          <i class="fas fa-align-left text-blue-500 mr-3"></i> Description
+        </h2>
+        <p class="text-gray-700 mb-8 leading-relaxed">{{ evenement.description }}</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Colonne 1 -->
+          <div>
+            <div class="flex items-start mb-4">
+              <i class="fas fa-tag text-purple-500 mt-1 mr-3"></i>
+              <div>
+                <h3 class="font-semibold text-gray-700">Catégorie</h3>
+                <p class="text-gray-600 capitalize">{{ evenement.categorie }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-start mb-4">
+              <i class="fas fa-money-bill-wave text-yellow-500 mt-1 mr-3"></i>
+              <div>
+                <h3 class="font-semibold text-gray-700">Prix</h3>
+                <p class="text-gray-600">{{ evenement.prix }} DHS</p>
+              </div>
+            </div>
+            
+          </div>
+
+          <!-- Colonne 2 -->
+          <div>
+            <div class="flex items-start mb-4">
+              <i class="fas fa-calendar-day text-blue-500 mt-1 mr-3"></i>
+              <div>
+                <h3 class="font-semibold text-gray-700">Dates</h3>
+                <p class="text-gray-600">
+                  Du <span class="font-medium">{{ evenement.date_debut|date:"d/m/Y H:i" }}</span><br>
+                  Au <span class="font-medium">{{ evenement.date_fin|date:"d/m/Y H:i" }}</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-start">
+              <i class="fas fa-users text-green-500 mt-1 mr-3"></i>
+              <div>
+                <h3 class="font-semibold text-gray-700">Capacité</h3>
+                <p class="text-gray-600">{{ evenement.capacite_max }} participants max</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="mt-8 flex flex-wrap justify-center gap-4 animate_animated animatefadeIn animate_delay-1s">
+      <a href="{% url 'liste_evenements' %}" 
+         class="btn-action-secondary hover:animate_animated hover:animate_headShake">
+        <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
+      </a>
+
+      {% if not user.est_admin and evenement.statut == 'valide' %}
+      <a href="{% url 'inscription_evenement' evenement.id %}" 
+      class="btn-action-primary hover:animate_animated hover:animate_pulse">
+      <i class="fas fa-user-plus mr-2"></i> S'inscrire ({{ evenement.prix }} DHS)
+      </a>
+      {% endif %}
+    </div>
+  </div>
 </div>
+
+<!-- Include Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+<style>
+  /* Boutons stylisés */
+  .btn-action-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium shadow-lg;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-action-primary:hover {
+    @apply bg-gradient-to-r from-blue-700 to-purple-700 shadow-xl;
+    transform: translateY(-2px);
+  }
+  
+  .btn-action-secondary {
+    @apply px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium shadow;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-action-secondary:hover {
+    @apply bg-gray-50 shadow-md;
+    transform: translateY(-2px);
+  }
+  
+  /* Effet de zoom sur l'image */
+  .hover\:scale-110:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Animation personnalisée */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+</style>
 {% endblock %}

@@ -1,19 +1,300 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Mon Profil</h2>
-    <div class="card p-3">
-        <p><strong>Prénom :</strong> {{ utilisateur.first_name }}</p>
-        <p><strong>Nom :</strong> {{ utilisateur.last_name }}</p>
-        <p><strong>Email :</strong> {{ utilisateur.email }}</p>
-        <p><strong>Date d'inscription :</strong> {{ utilisateur.dateInscription }}</p>
-        <p><strong>Rôle:</strong> {{ user.get_role_display }}</p>
-            {% if utilisateur.photoProfil %}
-                <img src="{{ utilisateur.photoProfil.url }}" alt="Photo de profil" class="img-thumbnail" width="200">
-        {% else %}
-            <p>Aucune photo de profil</p>
-        {% endif %}
+<div class="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-900 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+  <!-- Effets cosmiques en arrière-plan -->
+  <div class="absolute inset-0 overflow-hidden z-0">
+    <div class="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-indigo-500/10 blur-3xl animate-float"></div>
+    <div class="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-purple-500/10 blur-3xl animate-float animation-delay-3000"></div>
+    <div class="absolute top-1/3 right-1/2 w-64 h-64 rounded-full bg-blue-500/10 blur-3xl animate-float animation-delay-6000"></div>
+  </div>
+
+  <div class="max-w-6xl mx-auto relative z-10">
+    <!-- En-tête holographique -->
+    <div class="text-center mb-16 animate__animated animate__fadeInDown">
+      <h1 class="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 mb-6">
+        <i class="fas fa-user-astronaut mr-4 text-purple-300 animate-pulse"></i>
+        Mon Espace Personnel
+      </h1>
+      <div class="w-48 h-2 bg-gradient-to-r from-cyan-400 to-purple-400 mx-auto rounded-full shadow-lg glow-effect"></div>
     </div>
-    <a href="{% url 'modifier_profil' %}" class="btn btn-primary mt-3">Modifier mon profil</a>
+
+    <!-- Carte de profil futuriste -->
+    <div class="bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-gray-700/50 transform transition-all duration-700 hover:shadow-3xl hover:-translate-y-3 animate__animated animate__fadeInUp">
+      <div class="flex flex-col xl:flex-row">
+        <!-- Section photo avec effet 3D -->
+        <div class="w-full xl:w-2/5 bg-gradient-to-br from-gray-800 to-gray-900 p-12 flex flex-col items-center justify-center relative overflow-hidden">
+          <div class="relative group perspective-1000 w-72 h-72">
+            {% if utilisateur.photoProfil %}
+            <div class="relative z-10 w-full h-full rounded-full overflow-hidden shadow-[0_0_30px_rgba(124,58,237,0.5)] transform-style-preserve-3d transition-all duration-1000 group-hover:rotate-y-20">
+              <img src="{{ utilisateur.photoProfil.url }}" alt="Photo de profil" 
+                   class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+            </div>
+            {% else %}
+            <div class="relative z-10 w-full h-full rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center shadow-[0_0_30px_rgba(124,58,237,0.5)] transform-style-preserve-3d transition-all duration-1000 group-hover:rotate-y-20">
+              <i class="fas fa-user-astronaut text-gray-400 text-8xl"></i>
+            </div>
+            {% endif %}
+            <div class="absolute -inset-4 rounded-full bg-gradient-to-r from-cyan-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+          </div>
+          
+          <div class="mt-12 text-center space-y-4">
+            <h2 class="text-4xl font-bold text-white">{{ utilisateur.first_name }} {{ utilisateur.last_name }}</h2>
+            <span class="inline-block px-6 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 text-white text-lg font-semibold shadow-lg">
+              {{ utilisateur.get_role_display }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Section informations avec effet terminal futuriste -->
+        <div class="w-full xl:w-3/5 p-12 bg-gray-900/50 backdrop-blur-md">
+          <div class="space-y-8">
+            <!-- Ligne email avec animation -->
+            <div class="terminal-line transform transition-all duration-500 hover:scale-[1.02] hover:bg-gray-800/70">
+              <div class="flex items-center">
+                <div class="icon-container bg-cyan-500/20 text-cyan-400 mr-6">
+                  <i class="fas fa-at text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="text-sm font-mono text-cyan-400 mb-2 tracking-wider">ADRESSE EMAIL</div>
+                  <div class="text-xl font-semibold text-white typewriter-effect">{{ utilisateur.email }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ligne date d'inscription -->
+            <div class="terminal-line transform transition-all duration-500 hover:scale-[1.02] hover:bg-gray-800/70">
+              <div class="flex items-center">
+                <div class="icon-container bg-purple-500/20 text-purple-400 mr-6">
+                  <i class="fas fa-calendar-star text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="text-sm font-mono text-purple-400 mb-2 tracking-wider">DATE D'INSCRIPTION</div>
+                  <div class="text-xl font-semibold text-white">{{ utilisateur.dateInscription|date:"d F Y" }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ligne statut -->
+            <div class="terminal-line transform transition-all duration-500 hover:scale-[1.02] hover:bg-gray-800/70">
+              <div class="flex items-center">
+                <div class="icon-container bg-green-500/20 text-green-400 mr-6">
+                  <i class="fas fa-user-shield text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="text-sm font-mono text-green-400 mb-2 tracking-wider">STATUT DU COMPTE</div>
+                  <div class="text-xl font-semibold text-white">
+                    <span class="inline-flex items-center px-4 py-2 rounded-full bg-green-900/30 text-green-400 border border-green-400/30">
+                      <span class="w-3 h-3 mr-2 rounded-full bg-green-500 animate-pulse"></span>
+                      COMPTE ACTIF
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boutons d'action spectaculaires -->
+    <div class="flex flex-col sm:flex-row justify-center gap-8 mt-16 animate__animated animate__fadeIn animate__delay-1s">
+      <!-- Bouton Modifier Profil -->
+      <a href="{% url 'modifier_profil' %}" class="btn-action btn-edit">
+        <span class="btn-content">
+          <i class="fas fa-user-edit mr-3"></i>
+          <span>Modifier Profil</span>
+        </span>
+        <span class="btn-glow"></span>
+      </a>
+      
+      <!-- Bouton Paramètres -->
+      <a href="#" class="btn-action btn-settings">
+        <span class="btn-content">
+          <i class="fas fa-cogs mr-3"></i>
+          <span>Paramètres</span>
+        </span>
+        <span class="btn-glow"></span>
+      </a>
+      
+      <!-- Bouton Déconnexion -->
+      <a href="#" class="btn-action btn-logout">
+        <span class="btn-content">
+          <i class="fas fa-sign-out-alt mr-3"></i>
+          <span>Déconnexion</span>
+        </span>
+        <span class="btn-glow"></span>
+      </a>
+    </div>
+  </div>
 </div>
+
+<!-- Include Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+<style>
+  /* Animations cosmiques */
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+  }
+  
+  @keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+  
+  @keyframes glow {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+  
+  .animate-float {
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  .animation-delay-3000 { animation-delay: 3s; }
+  .animation-delay-6000 { animation-delay: 6s; }
+  
+  .typewriter-effect {
+    overflow: hidden;
+    white-space: nowrap;
+    animation: typewriter 2s steps(40) 1s 1 normal both;
+  }
+  
+  /* Effets 3D futuristes */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .rotate-y-20 {
+    transform: rotateY(20deg);
+  }
+  
+  /* Style terminal néon */
+  .terminal-line {
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background: rgba(30, 30, 40, 0.5);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+  
+  .terminal-line:hover {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+    border-color: rgba(124, 58, 237, 0.4);
+  }
+  
+  /* Icônes futuristes */
+  .icon-container {
+    width: 56px;
+    height: 56px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Boutons d'action ultra-modernes */
+  .btn-action {
+    position: relative;
+    overflow: hidden;
+    padding: 1.25rem 2.5rem;
+    border-radius: 1rem;
+    font-weight: 700;
+    font-size: 1.125rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transition: all 0.5s ease;
+    transform: translateY(0);
+  }
+  
+  .btn-action:hover {
+    transform: scale(1.05);
+  }
+  
+  .btn-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+  }
+  
+  .btn-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  
+  .btn-action:hover .btn-glow {
+    opacity: 1;
+  }
+  
+  /* Bouton Modifier Profil */
+  .btn-edit {
+    background: linear-gradient(to bottom right, #0891b2, #2563eb);
+    color: white;
+  }
+  
+  .btn-edit .btn-glow {
+    background: radial-gradient(circle at center, rgba(34, 211, 238, 0.8) 0%, transparent 70%);
+  }
+  
+  /* Bouton Paramètres */
+  .btn-settings {
+    background: linear-gradient(to bottom right, #7c3aed, #c026d3);
+    color: white;
+  }
+  
+  .btn-settings .btn-glow {
+    background: radial-gradient(circle at center, rgba(192, 132, 252, 0.8) 0%, transparent 70%);
+  }
+  
+  /* Bouton Déconnexion */
+  .btn-logout {
+    background: linear-gradient(to bottom right, #dc2626, #ea580c);
+    color: white;
+  }
+  
+  .btn-logout .btn-glow {
+    background: radial-gradient(circle at center, rgba(248, 113, 113, 0.8) 0%, transparent 70%);
+  }
+  
+  /* Effets de lueur */
+  .glow-effect {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+</style>
+
+<script>
+  // Animation cosmique au chargement
+  document.addEventListener('DOMContentLoaded', function() {
+    // Effet de parallaxe avancé
+    window.addEventListener('mousemove', function(e) {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      
+      document.querySelectorAll('.animate-float').forEach(function(el, index) {
+        const factor = index * 0.5 + 1;
+        el.style.transform = 'translate(' + ((x * 30 - 15) * factor) + 'px, ' + ((y * 30 - 15) * factor) + 'px) rotate(' + ((x * 10 - 5) * factor) + 'deg)';
+      });
+    });
+    
+    // Animation séquentielle des éléments
+    const elements = document.querySelectorAll('.terminal-line');
+    elements.forEach(function(el, index) {
+      setTimeout(function() {
+        el.classList.add('animate__animated', 'animate__fadeInRight');
+      }, index * 300);
+    });
+  });
+</script>
 {% endblock %}

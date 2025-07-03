@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'widget_tweaks',
     'reservations',
+    'paypal.standard.ipn',
 ]
 STATIC_URL = '/static/'
 MIDDLEWARE = [
@@ -124,3 +125,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 LOGIN_URL = '/login/'
+#paypal settings
+PAYPAL_TEST = True
+PAYPAL_TEST_EMAIL = 'businessoth@gmail.com'
+PAYPAL_URL = 'https://www.sandbox.paypal.com/cgi-bin/webscr'

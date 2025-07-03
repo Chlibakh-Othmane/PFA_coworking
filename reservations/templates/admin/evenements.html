@@ -24,64 +24,114 @@
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border-collapse: separate;
+        border-spacing: 0;
     }
     
     .table thead {
-        background: linear-gradient(135deg, #2c3e50, #4a6491);
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     }
     
     .table th {
         color: white;
         font-weight: 500;
         letter-spacing: 0.5px;
+        border: none;
+        padding: 15px;
+    }
+    
+    .table td {
+        padding: 12px 15px;
+        vertical-align: middle;
+        border-top: 1px solid rgba(0,0,0,0.05);
     }
     
     .table-hover tbody tr:hover {
-        background-color: rgba(74, 100, 145, 0.05);
-        transform: scale(1.01);
+        background-color: rgba(30, 60, 114, 0.05);
+        transform: scale(1.005);
         transition: all 0.2s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
     
-    /* Boutons avec effets */
-    .btn {
+    /* Boutons avec taille égale et couleurs bleu/vert */
+    .btn-action {
         transition: all 0.3s ease;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        min-width: 100px;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
     
-    .btn:hover {
+    .btn-action:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     
-    .btn-success {
-        background: linear-gradient(135deg, #28a745, #5cb85c);
+    .btn-validate {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
         border: none;
+        color: white;
     }
     
-    .btn-danger {
-        background: linear-gradient(135deg, #dc3545, #e35d6a);
+    .btn-delete {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
         border: none;
+        color: white;
     }
     
-    .btn-info {
-        background: linear-gradient(135deg, #17a2b8, #5bc0de);
+    .btn-view {
+        background: linear-gradient(135deg, #3498db, #2980b9);
         border: none;
+        color: white;
     }
     
-    /* Badges modernes */
+    .btn-add {
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        border: none;
+        color: white;
+        min-width: 180px;
+    }
+    
+    /* Badges modernes bleu/vert */
     .badge {
-        padding: 6px 10px;
+        padding: 6px 12px;
         font-weight: 500;
         border-radius: 20px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
     }
     
-    /* Titre avec effet */
+    .bg-success {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+    }
+    
+    .bg-danger {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+    }
+    
+    .bg-warning {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+    }
+    
+    .bg-secondary {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+    
+    /* Titre avec effet bleu */
     h2 {
         color: #2c3e50;
         position: relative;
-        padding-bottom: 10px;
+        padding-bottom: 15px;
         margin-bottom: 30px;
+        font-weight: 600;
     }
     
     h2:after {
@@ -89,19 +139,21 @@
         position: absolute;
         bottom: 0;
         left: 0;
-        width: 60px;
+        width: 80px;
         height: 4px;
-        background: linear-gradient(90deg, #4a6491, #28a745);
-        border-radius: 2px;
+        background: linear-gradient(90deg, #1e3c72, #2ecc71);
+        border-radius: 4px;
     }
     
     /* Message vide */
     .empty-message {
         text-align: center;
-        padding: 20px;
-        color: #6c757d;
+        padding: 40px;
+        color: #7f8c8d;
         font-style: italic;
         animation: pulse 2s infinite;
+        background-color: rgba(236, 240, 241, 0.5);
+        border-radius: 10px;
     }
     
     @keyframes pulse {
@@ -109,70 +161,140 @@
         50% { opacity: 1; }
         100% { opacity: 0.7; }
     }
+    
+    /* Animation pour les badges "Validé" */
+    @keyframes pulse-badge {
+        0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+        70% { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+    }
+    
+    .pulse-animation {
+        animation: pulse-badge 2s infinite;
+    }
+    
+    /* Conteneur des boutons d'action */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: nowrap; /* Empêche le retour à la ligne */
+        justify-content: center;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .table-responsive {
+            border: none;
+        }
+        
+        .table thead {
+            display: none;
+        }
+        
+        .table tr {
+            display: block;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: none;
+            position: relative;
+            padding-left: 50%;
+        }
+        
+        .table td:before {
+            content: attr(data-label);
+            position: absolute;
+            left: 15px;
+            width: 45%;
+            padding-right: 15px;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+        
+        .action-buttons {
+            flex-direction: column; /* Sur mobile, les boutons en colonne */
+            gap: 5px;
+        }
+        
+        .btn-action {
+            width: 100%;
+        }
+    }
 </style>
 
 <div class="container mt-4">
-    <h2 class="mb-4">Liste des événements</h2>
-
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Liste des événements pour l'administrateur</h2>
+        <a href="{% url 'ajouter_evenement' %}" class="btn btn-add">
+            <i class="fas fa-plus-circle me-2"></i> Ajouter un événement
+        </a>
+    </div>
+    
     <div class="table-responsive">
-        <table class="table table-hover table-bordered mt-3">
-            <thead class="table-dark">
+        <table class="table table-hover">
+            <thead>
                 <tr>
                     <th>Titre</th>
                     <th>Description</th>
                     <th>Catégorie</th>
                     <th>Date début</th>
                     <th>Date fin</th>
-                    <th>Capacité max</th>
+                    <th>Capacité</th>
                     <th>Statut</th>
-                    <th>Actions</th>
+                    <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for evenement in evenements %}
                     <tr>
-                        <td class="fw-semibold">{{ evenement.titre }}</td>
-                        <td>{{ evenement.description|truncatechars:50 }}</td>
-                        <td><span class="badge bg-secondary">{{ evenement.categorie }}</span></td>
-                        <td>{{ evenement.date_debut|date:"d/m/Y H:i" }}</td>
-                        <td>{{ evenement.date_fin|date:"d/m/Y H:i" }}</td>
-                        <td class="text-center">{{ evenement.capacite_max }}</td>
-                        <td>
+                        <td data-label="Titre" class="fw-semibold">{{ evenement.titre }}</td>
+                        <td data-label="Description">{{ evenement.description|truncatechars:50 }}</td>
+                        <td data-label="Catégorie"><span class="badge bg-secondary">{{ evenement.categorie }}</span></td>
+                        <td data-label="Date début">{{ evenement.date_debut|date:"d/m/Y H:i" }}</td>
+                        <td data-label="Date fin">{{ evenement.date_fin|date:"d/m/Y H:i" }}</td>
+                        <td data-label="Capacité" class="text-center">{{ evenement.capacite_max }}</td>
+                        <td data-label="Statut">
                             {% if evenement.statut == 'valide' %}
                                 <span class="badge bg-success pulse-animation">Validé</span>
                             {% elif evenement.statut == 'annule' %}
                                 <span class="badge bg-danger">Annulé</span>
                             {% else %}
-                                <span class="badge bg-warning text-dark">En attente</span>
+                                <span class="badge bg-warning">En attente</span>
                             {% endif %}
                         </td>
-                        <td class="d-flex flex-wrap gap-2">
-                            {% if evenement.statut == 'en_attente' %}
-                                <form method="post" action="{% url 'valider_evenement' evenement.id %}">
+                        <td data-label="Actions">
+                            <div class="action-buttons">
+                                {% if evenement.statut == 'en_attente' %}
+                                    <form method="post" action="{% url 'valider_evenement' evenement.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-action btn-validate">
+                                            <i class="fas fa-check-circle me-1"></i> Valider
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                
+                                <form method="post" action="{% url 'supprimer_evenement' evenement.id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-success btn-sm">
-                                        <i class="fas fa-check-circle me-1"></i> Valider
+                                    <button type="submit" class="btn-action btn-delete">
+                                        <i class="fas fa-trash-alt me-1"></i> Supprimer
                                     </button>
                                 </form>
-                            {% endif %}
-                            
-                            <form method="post" action="{% url 'supprimer_evenement' evenement.id %}" onsubmit="return confirm('Confirmer la suppression ?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash-alt me-1"></i> Supprimer
-                                </button>
-                            </form>
 
-                            <form method="get" action="{% url 'voir_inscrits' evenement.id %}">
-                                <button type="submit" class="btn btn-info btn-sm">
+                                <a href="{% url 'voir_inscrits' evenement.id %}" class="btn-action btn-view">
                                     <i class="fas fa-users me-1"></i> Inscrits
-                                </button>
-                            </form>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="8" class="empty-message">Aucun événement pour l'instant.</td>
+                        <td colspan="8" class="empty-message">Aucun événement disponible pour le moment.</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -184,19 +306,23 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
-    // Animation supplémentaire pour les badges "Validé"
+    // Ajout des labels pour le responsive
     document.addEventListener('DOMContentLoaded', function() {
-        const validBadges = document.querySelectorAll('.badge.bg-success');
+        const headers = document.querySelectorAll('th');
         
-        validBadges.forEach(badge => {
-            badge.classList.add('pulse-animation');
+        headers.forEach(function(header, index) {
+            const label = header.textContent;
+            document.querySelectorAll('td:nth-child(' + (index + 1) + ')').forEach(function(cell) {
+                cell.setAttribute('data-label', label);
+            });
         });
+        
+        // Animation au chargement
+        setTimeout(function() {
+            document.querySelectorAll('tr').forEach(function(tr) {
+                tr.style.opacity = 1;
+            });
+        }, 100);
     });
 </script>
-
-<style>
-    .pulse-animation {
-        animation: pulse 2s infinite;
-    }
-</style>
 {% endblock %}

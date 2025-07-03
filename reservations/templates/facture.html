@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Facture de Réservation - {{ reservation.espace.nom }}</title>
+    <style>
+        /* Style de base optimisé pour l'impression */
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* En-tête de facture */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .logo {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin: 10px 0 5px;
+        }
+        
+        .invoice-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .invoice-meta {
+            text-align: right;
+            font-size: 14px;
+        }
+        
+        /* Section détails */
+        .details-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .client-info, .reservation-info {
+            width: 48%;
+        }
+        
+        .section-title {
+            background-color: #f8f9fa;
+            padding: 8px 12px;
+            font-weight: bold;
+            border-left: 4px solid #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .detail-row {
+            display: flex;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            width: 40%;
+            color: #7f8c8d;
+        }
+        
+        .detail-value {
+            width: 60%;
+        }
+        
+        /* Total */
+        .total {
+            text-align: right;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+            font-size: 18px;
+        }
+        
+        .amount {
+            font-size: 22px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        /* Pied de page */
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            text-align: center;
+            color: #95a5a6;
+        }
+        
+        /* Styles d'impression */
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .no-print {
+                display: none;
+            }
+            
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- En-tête -->
+    <div class="header">
+        <!-- Remplacez par votre logo si disponible -->
+        <div class="logo">
+            <svg width="150" height="50" viewBox="0 0 150 50" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="10" width="130" height="30" rx="5" fill="#3498db" opacity="0.8"/>
+                <text x="75" y="32" font-family="Arial" font-size="16" fill="white" text-anchor="middle">MonEspacePro</text>
+            </svg>
+        </div>
+        <h1>FACTURE DE RÉSERVATION</h1>
+        <p>N° {{ reservation.id }}/{{ reservation.date_debut|date:"Y" }}</p>
+    </div>
+    
+    <!-- Métadonnées de facture -->
+    <div class="invoice-info">
+        <div>
+            <p><strong>Date d'émission :</strong> {% now "d/m/Y" %}</p>
+            <p><strong>Date de réservation :</strong> {{ reservation.date_debut|date:"d/m/Y" }}</p>
+        </div>
+        <div class="invoice-meta">
+            <p><strong>Statut :</strong> Payé</p>
+            <p><strong>Mode de paiement :</strong> PayPal</p>
+        </div>
+    </div>
+    
+    <!-- Détails client et réservation -->
+    <div class="details-container">
+        <div class="client-info">
+            <div class="section-title">INFORMATIONS CLIENT</div>
+            <div class="detail-row">
+                <div class="detail-label">Nom complet :</div>
+                <div class="detail-value">{{ reservation.membre.first_name }} {{ reservation.membre.last_name }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Email :</div>
+                <div class="detail-value">{{ reservation.membre.email }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Téléphone :</div>
+                <div class="detail-value">{{ reservation.membre.phone|default:"Non renseigné" }}</div>
+            </div>
+        </div>
+        
+        <div class="reservation-info">
+            <div class="section-title">DÉTAILS DE RÉSERVATION</div>
+            <div class="detail-row">
+                <div class="detail-label">Espace :</div>
+                <div class="detail-value">{{ reservation.espace.nom }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Date :</div>
+                <div class="detail-value">{{ reservation.date_debut|date:"d/m/Y" }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Heure :</div>
+                <div class="detail-value">{{ reservation.date_debut|time:"H:i" }} - {{ reservation.date_fin|time:"H:i" }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Durée :</div>
+                <div class="detail-value">{{ reservation.duree }} heures</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Détails de paiement -->
+    <div class="section-title">DÉTAILS DE PAIEMENT</div>
+    <div class="detail-row">
+        <div class="detail-label">Tarif horaire :</div>
+        <div class="detail-value">{{ reservation.espace.tarif_par_heure }} MAD/heure</div>
+    </div>
+    <div class="detail-row">
+        <div class="detail-label">Total heures :</div>
+        <div class="detail-value">{{ reservation.duree }} heures × {{ reservation.espace.tarif_par_heure }} MAD</div>
+    </div>
+    
+    <!-- Total -->
+    <div class="total">
+        <p>Montant total TTC : <span class="amount">{{ reservation.montant_total|floatformat:2 }} MAD</span></p>
+    </div>
+    
+    <!-- Bouton d'impression (visible uniquement à l'écran) -->
+    <div class="no-print" style="text-align: center; margin-top: 30px;">
+        <button onclick="window.print()" style="
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        ">
+            Imprimer cette facture
+        </button>
+    </div>
+    
+    <script>
+        // Ajoute automatiquement la date du jour si non présente
+        document.addEventListener('DOMContentLoaded', function() {
+            if(!document.querySelector('[data-date]')) {
+                const today = new Date();
+                document.querySelector('.invoice-info').innerHTML += 
+                    `<p><strong>Date d'émission :</strong> ${today.toLocaleDateString()}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2 class="text-success">✅ Paiement réussi !</h2>
+    <p>Vous êtes inscrit à l'événement <strong>{{ inscription.evenement.titre }}</strong>.</p>
+
+    <a href="{% url 'facture_evenement_pdf' inscription.id %}" class="btn btn-outline-success mt-3">
+        📄 Télécharger la facture PDF
+    </a>
+
+    <br>
+    <a href="{% url 'liste_evenements' %}" class="btn btn-primary mt-3">Voir les autres événements</a>
+</div>
+{% endblock %}

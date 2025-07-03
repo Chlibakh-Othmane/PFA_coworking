@@ -1,9 +1,138 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>{{ espace.nom }}</h2>
-    <p><strong>Capacité :</strong> {{ espace.capacite }}</p>
-    <p><strong>Tarif par heure :</strong> {{ espace.tarif_par_heure }} MAD</p>
-    <a href="{% url 'reserver' espace.id %}" class="btn btn-primary mt-3">Réserver cet espace</a>
+<style>
+    .espace-detail-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+        border-radius: 15px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        margin-top: 2rem;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .espace-title {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        position: relative;
+        padding-bottom: 15px;
+    }
+    
+    .espace-title:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 60px;
+        height: 4px;
+        background: #3498db;
+        border-radius: 2px;
+    }
+    
+    .detail-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+        transition: transform 0.3s ease;
+    }
+    
+    .detail-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #7f8c8d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .detail-value {
+        font-size: 1.1rem;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+    
+    .btn-reserver {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        border: none;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        border-radius: 50px;
+        box-shadow: 0 5px 15px rgba(41, 128, 185, 0.3);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-reserver:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(41, 128, 185, 0.4);
+    }
+    
+    .btn-reserver i {
+        margin-right: 10px;
+    }
+    
+    @media (max-width: 768px) {
+        .espace-detail-container {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="espace-detail-container">
+        <h1 class="espace-title">
+            <i class="fas fa-map-marker-alt text-primary me-2"></i>{{ espace.nom }}
+        </h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="detail-card">
+                    <div class="detail-label">
+                        <i class="fas fa-users me-2"></i>Capacité
+                    </div>
+                    <div class="detail-value">
+                        {{ espace.capacite }} personnes
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="detail-card">
+                    <div class="detail-label">
+                        <i class="fas fa-tag me-2"></i>Tarif horaire
+                    </div>
+                    <div class="detail-value">
+                        {{ espace.tarif_par_heure|floatformat:2 }} MAD
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if espace.equipements %}
+        <div class="detail-card">
+            <div class="detail-label">
+                <i class="fas fa-tools me-2"></i>Équipements disponibles
+            </div>
+            <div class="detail-value">
+                {{ espace.equipements }}
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'reserver' espace.id %}" class="btn btn-reserver">
+                <i class="fas fa-calendar-check"></i> Réserver cet espace
+            </a>
+        </div>
+    </div>
 </div>
 {% endblock %}

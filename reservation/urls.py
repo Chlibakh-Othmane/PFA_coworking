@@ -4,7 +4,6 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from reservations import views
-
 urlpatterns = [
     path('', include('reservations.urls')),
     path('login/', views.login_view, name='login'),  # <- celui qu'on va utiliser

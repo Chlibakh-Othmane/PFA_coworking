@@ -1,59 +1,254 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
 {% block content %}
-<div class="container animate__animated animate__fadeIn">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-lg border-0 rounded-lg mt-5 animate__animated animate__slideInDown">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="text-center font-weight-light my-4">
-                        <i class="fas fa-calendar-plus me-2"></i>Ajouter un Événement
-                    </h2>
-                </div>
-                <div class="card-body">
-                    <form method="post" class="needs-validation" novalidate>
-                        {% csrf_token %}
-
-                        {% for field in form %}
-                        <div class="form-group mb-4 animate__animated animate__fadeInUp">
-                            <label for="{{ field.id_for_label }}" class="form-label">
-                                {{ field.label }}
-                                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
-                            </label>
-                            {{ field }}
-                            {% if field.help_text %}
-                            <small class="form-text text-muted">{{ field.help_text }}</small>
-                            {% endif %}
-                            {% for error in field.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ error }}
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endfor %}
-
-                        <div class="d-grid gap-2 mt-5 animate__animated animate__fadeIn">
-                            <button type="submit" class="btn btn-primary btn-lg py-3">
-                                <i class="fas fa-check-circle me-2"></i>Créer l'événement
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+    <!-- Formulaire amélioré -->
+    <div class="w-full lg:w-1/2">
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden animate_animated animate_fadeInUp">
+        <!-- En-tête -->
+        <div class="bg-gradient-to-r from-blue-500 to-cyan-500 py-5 px-6 text-center relative">
+          <h2 class="text-2xl font-bold text-white relative">
+            <i class="fas fa-calendar-plus mr-2"></i>
+            Créer un Événement
+          </h2>
+          <p class="text-blue-100 mt-1 text-sm">Remplissez les détails de votre événement</p>
         </div>
+
+        <!-- Corps du formulaire -->
+        <div class="p-6">
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- Section compacte -->
+            <div class="grid grid-cols-1 gap-6">
+              {% for field in form %}
+                {% if field.name != 'description' %}
+                <div class="form-group">
+                  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-{% cycle 'heading' 'calendar-alt' 'clock' 'users' 'map-marker-alt' %} mr-2 text-blue-500"></i>
+                    {{ field.label }}
+                  </label>
+                  {% render_field field class="form-input" %}
+                  {% for error in field.errors %}
+                  <p class="mt-1 text-xs text-red-600 animate-pulse">{{ error }}</p>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+              <label for="id_description" class="block text-sm font-medium text-gray-700 mb-2">
+                <i class="fas fa-align-left mr-2 text-blue-500"></i>
+                Description
+              </label>
+              {% render_field form.description class="form-textarea" %}
+            </div>
+
+            <!-- Bouton de soumission -->
+            <div class="pt-4">
+              <button type="submit" class="form-submit-btn">
+                <i class="fas fa-check-circle mr-2"></i>
+                Publier l'événement
+                <span class="submit-arrow">→</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
+
+    <!-- Galerie d'événements -->
+    <div class="w-full lg:w-1/2">
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden h-full">
+        <div class="bg-gradient-to-r from-blue-500 to-cyan-500 py-5 px-6">
+          <h3 class="text-xl font-bold text-white">
+            <i class="fas fa-images mr-2"></i>
+            Événements Inspirants
+          </h3>
+        </div>
+        <div class="p-4 space-y-4">
+          <!-- Événement 1 -->
+          <div class="relative group overflow-hidden rounded-xl h-48">
+            <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" 
+                 alt="Concert" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
+              <div>
+                <span class="text-white font-medium">Festival de Musique</span>
+                <p class="text-blue-100 text-sm">500+ participants</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Événement 2 -->
+          <div class="relative group overflow-hidden rounded-xl h-48">
+            <img src="https://images.unsplash.com/photo-1431540015161-0bf868a2d407?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" 
+                 alt="Conférence" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
+              <div>
+                <span class="text-white font-medium">Conférence Tech</span>
+                <p class="text-blue-100 text-sm">Experts mondiaux</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Événement 3 -->
+          <div class="relative group overflow-hidden rounded-xl h-48">
+            <img src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" 
+                 alt="Atelier" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
+              <div>
+                <span class="text-white font-medium">Atelier Créatif</span>
+                <p class="text-blue-100 text-sm">Apprentissage interactif</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
-    .form-control, .form-select {
-        border-radius: 0.5rem;
-        padding: 0.75rem 1rem;
-        transition: all 0.3s ease;
+  /* Styles des champs de formulaire */
+  .form-input, .form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #f8fafc;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .form-input:focus, .form-textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background-color: #ffffff;
+    outline: none;
+  }
+
+  .form-textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  /* Bouton de soumission */
+  .form-submit-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    color: white;
+    font-weight: 500;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .form-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .form-submit-btn:active {
+    transform: translateY(0);
+  }
+
+  .submit-arrow {
+    margin-left: 8px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+  }
+
+  .form-submit-btn:hover .submit-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Effet de vague sur le bouton */
+  .form-submit-btn::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+  }
+
+  .form-submit-btn:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+  }
+
+  @keyframes ripple {
+    0% {
+      transform: scale(0, 0);
+      opacity: 0.5;
     }
-    .form-control:focus, .form-select:focus {
-        border-color: #4e73df;
-        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+    100% {
+      transform: scale(20, 20);
+      opacity: 0;
     }
+  }
+
+  /* Animation des erreurs */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+  }
+
+  .animate-pulse {
+    animation: shake 0.5s ease;
+  }
+
+  /* Icônes dans les labels */
+  .form-group label i {
+    transition: all 0.3s ease;
+  }
+
+  .form-input:focus ~ label i,
+  .form-textarea:focus ~ label i {
+    color: #3b82f6;
+    transform: scale(1.1);
+  }
 </style>
+
+<!-- Font Awesome pour les icônes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+  // Animation supplémentaire pour les champs focus
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.form-input, .form-textarea');
+    
+    inputs.forEach(input => {
+      // Ajout d'un icône à droite pour les champs focus
+      input.addEventListener('focus', function() {
+        this.parentNode.classList.add('focused');
+      });
+      
+      input.addEventListener('blur', function() {
+        this.parentNode.classList.remove('focused');
+      });
+    });
+  });
+</script>
 {% endblock %}

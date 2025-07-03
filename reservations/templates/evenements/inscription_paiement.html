@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes ripple {
+        0% { transform: scale(0); opacity: 0.5; }
+        100% { transform: scale(20); opacity: 0; }
+    }
+
+    /* Styles principaux */
+    .payment-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .payment-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        padding-bottom: 15px;
+    }
+    
+    .payment-header h2 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .payment-header:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, #3498db, #2ecc71);
+        border-radius: 2px;
+    }
+    
+    .amount-display {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #27ae60;
+        text-align: center;
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        animation: pulse 2s infinite;
+    }
+    
+    .payment-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .paypal-btn {
+        display: block;
+        width: 100%;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #003087, #009cde);
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+    
+    .paypal-btn:hover {
+        background: linear-gradient(135deg, #00256e, #0085c6);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .paypal-btn:active {
+        transform: translateY(-1px);
+    }
+    
+    .paypal-btn i {
+        margin-right: 12px;
+        font-size: 1.3rem;
+    }
+    
+    .paypal-btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+    
+    .paypal-btn:focus:not(:active)::after {
+        animation: ripple 1s ease-out;
+    }
+    
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 25px;
+        border-radius: 8px;
+        background: #f8f9fa;
+        color: #2c3e50;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .btn-back:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .btn-back i {
+        margin-right: 8px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .payment-container {
+            padding: 1rem;
+        }
+        
+        .payment-card {
+            padding: 1.5rem;
+        }
+        
+        .amount-display {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="payment-container">
+    <div class="payment-header">
+        <h2><i class="fas fa-ticket-alt"></i> Paiement pour : {{ evenement.titre }}</h2>
+    </div>
+    
+    <div class="amount-display">
+        {{ evenement.prix }} DHS
+    </div>
+    
+    <div class="payment-card">
+        <form action="{{ paypal_url }}" method="post" class="payment-form">
+            <input type="hidden" name="cmd" value="_xclick">
+            <input type="hidden" name="business" value="{{ paypal_dict.business }}">
+            <input type="hidden" name="item_name" value="{{ paypal_dict.item_name }}">
+            <input type="hidden" name="amount" value="{{ paypal_dict.amount }}">
+            <input type="hidden" name="invoice" value="{{ paypal_dict.invoice }}">
+            <input type="hidden" name="notify_url" value="{{ paypal_dict.notify_url }}">
+            <input type="hidden" name="return" value="{{ paypal_dict.return_url }}">
+            <input type="hidden" name="cancel_return" value="{{ paypal_dict.cancel_return }}">
+            <button type="submit" class="paypal-btn">
+                <i class="fab fa-paypal"></i> Payer avec PayPal
+            </button>
+        </form>
+    </div>
+    
+    <div class="text-center">
+        <a href="{% url 'liste_evenements' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Effet de surbrillance sur le montant
+        const amountDisplay = document.querySelector('.amount-display');
+        setTimeout(() => {
+            amountDisplay.style.boxShadow = '0 0 15px rgba(39, 174, 96, 0.4)';
+            setTimeout(() => {
+                amountDisplay.style.boxShadow = 'none';
+            }, 1000);
+        }, 500);
+    });
+</script>
+{% endblock %}

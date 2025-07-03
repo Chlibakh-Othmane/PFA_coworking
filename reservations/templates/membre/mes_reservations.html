@@ -1,33 +1,277 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Mes Réservations</h2>
+
+<style>
+    /* Style général */
+    .reservation-container {
+        background-color: #f8f9fa;
+        padding: 2rem;
+        border-radius: 15px;
+    }
+    
+    /* Titre */
+    .page-title {
+        color: #2c3e50;
+        font-weight: 700;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 10px;
+        margin-bottom: 30px;
+    }
+    
+    /* Bouton */
+    .btn-reservation {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .btn-reservation:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(41, 128, 185, 0.3);
+    }
+    .btn-cancel {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background-color: #c0392b;
+    }
+    
+    /* Tableau */
+    .reservation-table {
+        width: 100%;
+        background-color: white;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .reservation-table thead th {
+        background-color: #3498db;
+        color: white;
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+    
+    .reservation-table tbody td {
+        padding: 15px;
+        border-bottom: 1px solid #ecf0f1;
+        vertical-align: middle;
+    }
+    
+    .reservation-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .reservation-table tbody tr:hover {
+        background-color: #f1f8fe;
+    }
+    
+    /* Badges */
+    .badge-payed {
+        background-color: #2ecc71;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .badge-pending {
+        background-color: #f39c12;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .badge-finished {
+        background-color: #95a5a6;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .badge-upcoming {
+        background-color: #3498db;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    /* Carte vide */
+    .empty-card {
+        background-color: white;
+        border-radius: 15px;
+        padding: 3rem;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .empty-icon {
+        font-size: 5rem;
+        color: #bdc3c7;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Image espace */
+    .space-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+    
+    .space-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #ecf0f1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: #7f8c8d;
+    }
+</style>
+
+<div class="container reservation-container">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="page-title">
+            <i class="fas fa-calendar-alt me-2"></i>Mes Réservations
+        </h1>
+        <a href="{% url 'liste_espaces' %}" class="btn btn-reservation">
+            <i class="fas fa-plus me-1"></i> Nouvelle réservation
+        </a>
+    </div>
 
     {% if reservations %}
-        <table class="table table-bordered mt-3">
-            <thead class="table-light">
-                <tr>
-                    <th>Espace</th>
-                    <th>Date de début</th>
-                    <th>Date de fin</th>
-                    <th>Statut</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for reservation in reservations %}
+        <div class="table-responsive">
+            <table class="reservation-table">
+                <thead>
                     <tr>
-                        <td>{{ reservation.espace.nom }}</td>
-                        <td>{{ reservation.date_debut }}</td>
-                        <td>{{ reservation.date_fin }}</td>
-                        <td>{{ reservation.statut }}</td>
+                        <th style="width: 25%;">Espace</th>
+                        <th style="width: 20%;">Date & Heure</th>
+                        <th style="width: 10%;">Durée</th>
+                        <th style="width: 15%;">Montant</th>
+                        <th style="width: 15%;">Paiement</th>
+                        <th style="width: 15%;">Statut</th>
+                        <th style="width: 15%;">Annulation</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if reservation.espace.image %}
+                                <img src="{{ reservation.espace.image.url }}" 
+                                     class="space-img" 
+                                     alt="{{ reservation.espace.nom }}">
+                                {% else %}
+                                <div class="space-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ reservation.espace.nom }}</strong>
+                                    <div class="text-muted small">{{ reservation.espace.capacite }} personnes</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-medium">{{ reservation.date_debut|date:"d M Y" }}</div>
+                            <div class="text-muted">
+                                {{ reservation.date_debut|time:"H:i" }} - {{ reservation.date_fin|time:"H:i" }}
+                            </div>
+                        </td>
+                        <td>
+                            {{ reservation.duree }}h
+                        </td>
+                        <td class="fw-bold text-success">
+                            {{ reservation.montant_total|floatformat:2 }} DH
+                        </td>
+                        <td>
+                            {% if reservation.payee %}
+                                <span class="badge-payed">
+                                    <i class="fas fa-check-circle me-1"></i>Payé
+                                </span>
+                            {% else %}
+                                <a href="{% url 'payer_reservation' reservation.id %}" 
+                                   class="btn btn-success btn-sm" style="padding: 8px 15px;">
+                                    <i class="fas fa-credit-card me-1"></i>Payer
+                                </a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if reservation.terminee %}
+                                <span class="badge-finished">
+                                    <i class="fas fa-flag-checkered me-1"></i>Terminée
+                                </span>
+                            {% else %}
+                                <span class="badge-upcoming">
+                                    <i class="fas fa-clock me-1"></i>À venir
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not reservation.terminee %}
+                                <form method="post" action="{% url 'annuler_reservation' reservation.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-cancel" 
+                                            onclick="return confirm('Voulez-vous vraiment annuler cette réservation ?');">
+                                        Annuler
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% else %}
-        <div class="alert alert-info mt-3">
-            Vous n'avez encore effectué aucune réservation.
+        <div class="empty-card">
+            <div class="empty-icon">
+                <i class="fas fa-calendar-times"></i>
+            </div>
+            <h3 class="text-muted mb-3">Aucune réservation trouvée</h3>
+            <p class="text-muted mb-4">
+                Vous n'avez encore effectué aucune réservation.<br>
+                Commencez par explorer nos espaces disponibles.
+            </p>
+            <a href="{% url 'liste_espaces' %}" class="btn btn-reservation">
+                <i class="fas fa-search me-2"></i>Trouver un espace
+            </a>
         </div>
     {% endif %}
 </div>
+
 {% endblock %}

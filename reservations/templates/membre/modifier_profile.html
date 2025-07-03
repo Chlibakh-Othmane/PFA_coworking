@@ -1,11 +1,163 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}Modifier le profil{% endblock %}
 
 {% block content %}
-<h2>Modifier mon profil</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Enregistrer</button>
-</form>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md mx-auto">
+    <!-- En-tête avec animation -->
+    <div class="text-center mb-10 transform transition-all duration-500 hover:scale-105">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">
+        <i class="fas fa-user-edit text-blue-500 mr-2"></i>
+        Modifier mon profil
+      </h1>
+      <div class="w-20 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto rounded-full animate-pulse"></div>
+    </div>
+
+    <!-- Carte du formulaire -->
+    <div class="bg-white rounded-xl shadow-2xl overflow-hidden p-6 transform transition-all duration-300 hover:shadow-2xl">
+      <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Photo de profil -->
+        <div class="text-center">
+          <div class="relative inline-block group">
+            {% if form.instance.photoProfil %}
+              <img id="preview" src="{{ form.instance.photoProfil.url }}" 
+                   class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg mx-auto mb-4 hover:border-blue-300 transition-all duration-300 group-hover:scale-110">
+            {% else %}
+              <div id="preview" class="w-32 h-32 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center border-4 border-white shadow-lg mx-auto mb-4 hover:border-blue-300 transition-all duration-300 group-hover:scale-110">
+                <i class="fas fa-user text-gray-500 text-4xl"></i>
+              </div>
+            {% endif %}
+            <label for="id_photoProfil" class="absolute bottom-0 right-0 bg-gradient-to-br from-blue-500 to-purple-500 text-white p-2 rounded-full cursor-pointer hover:from-blue-600 hover:to-purple-600 transition-all shadow-md transform hover:scale-110">
+              <i class="fas fa-camera"></i>
+              <input type="file" name="photoProfil" id="id_photoProfil" class="hidden" accept="image/*">
+            </label>
+          </div>
+        </div>
+
+        <!-- Champs du formulaire -->
+        <div class="space-y-4">
+          {% for field in form %}
+            {% if field.name != 'photoProfil' %}
+              <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <i class="fas 
+                    {% if field.name == 'first_name' %}fa-user 
+                    {% elif field.name == 'last_name' %}fa-user-tag 
+                    {% elif field.name == 'email' %}fa-envelope 
+                    {% else %}fa-info-circle{% endif %} 
+                    text-blue-500 mr-2"></i> 
+                  {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                  <div class="text-red-500 text-xs mt-1 animate_animated animate_fadeIn">
+                    {{ field.errors|join:", " }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <!-- Bouton de soumission -->
+        <div class="pt-4 text-center">
+          <button type="submit" 
+                  class="btn-submit relative overflow-hidden group">
+            <span class="relative z-10 flex items-center justify-center">
+              <i class="fas fa-save mr-2"></i> Enregistrer les modifications
+            </span>
+            <span class="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Styles personnalisés -->
+<style>
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    outline: none;
+  }
+  
+  .btn-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    color: white;
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s;
+    position: relative;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  
+  .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 14px rgba(59, 130, 246, 0.3);
+  }
+  
+  .btn-submit:active {
+    transform: translateY(0);
+  }
+</style>
+
+<script>
+  // Prévisualisation de la photo de profil
+  document.getElementById('id_photoProfil')?.addEventListener('change', function(e) {
+    const preview = document.getElementById('preview');
+    const file = e.target.files[0];
+    
+    if (file) {
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        if (preview.tagName === 'IMG') {
+          preview.src = e.target.result;
+        } else {
+          const img = document.createElement('img');
+          img.id = 'preview';
+          img.src = e.target.result;
+          img.className = 'w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg mx-auto mb-4 hover:border-blue-300 transition-all duration-300 group-hover:scale-110';
+          preview.parentNode.replaceChild(img, preview);
+        }
+      }
+      
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Animation au chargement
+  document.addEventListener('DOMContentLoaded', function() {
+    const formCard = document.querySelector('.max-w-md > div');
+    formCard.style.opacity = '0';
+    formCard.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+      formCard.style.transition = 'all 0.5s ease-out';
+      formCard.style.opacity = '1';
+      formCard.style.transform = 'translateY(0)';
+    }, 100);
+  });
+</script>
 {% endblock %}

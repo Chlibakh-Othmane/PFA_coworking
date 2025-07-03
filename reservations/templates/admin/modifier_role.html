@@ -1,18 +1,137 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Modifier le rôle de {{ utilisateur.first_name }} {{ utilisateur.last_name }}</h2>
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="role">Nouveau rôle :</label>
-            <select name="role" id="role" class="form-control">
-                <option value="membre" {% if utilisateur.role == 'membre' %}selected{% endif %}>Membre</option>
-                <option value="admin" {% if utilisateur.role == 'admin' %}selected{% endif %}>Admin</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-success mt-3">Enregistrer</button>
-        <a href="{% url 'admin_utilisateurs' %}" class="btn btn-secondary mt-3">Annuler</a>
-    </form>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md mx-auto">
+    <!-- Carte principale avec animation -->
+    <div class="bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:shadow-3xl">
+      <!-- En-tête avec dégradé -->
+      <div class="bg-gradient-to-r from-blue-600 to-indigo-600 py-6 px-8 text-center">
+        <h2 class="text-2xl font-bold text-white">
+          <i class="fas fa-user-cog mr-2"></i>
+          Modifier le rôle
+        </h2>
+        <p class="text-blue-100 mt-1">{{ utilisateur.first_name }} {{ utilisateur.last_name }}</p>
+      </div>
+
+      <!-- Corps du formulaire -->
+      <div class="p-8">
+        <form method="post" class="space-y-6">
+          {% csrf_token %}
+          
+          <!-- Sélecteur de rôle avec style premium -->
+          <div class="form-group">
+            <label for="role" class="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+              <i class="fas fa-user-tag text-blue-500 mr-2"></i>
+              Sélectionnez le nouveau rôle
+            </label>
+            
+            <div class="relative">
+              <select name="role" id="role" 
+                      class="appearance-none w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white cursor-pointer">
+                <option value="membre" {% if utilisateur.role == 'membre' %}selected{% endif %}>
+                  <i class="fas fa-user mr-2"></i> Membre
+                </option>
+                <option value="admin" {% if utilisateur.role == 'admin' %}selected{% endif %}>
+                  <i class="fas fa-user-shield mr-2"></i> Administrateur
+                </option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <i class="fas fa-chevron-down text-gray-400"></i>
+              </div>
+            </div>
+            
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+              <div class="flex items-start">
+                <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                <p class="text-sm text-blue-700">
+                  Les administrateurs ont accès à toutes les fonctionnalités du système, 
+                  tandis que les membres ont des permissions limitées.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Boutons d'action -->
+          <div class="flex justify-between pt-4">
+            <button type="submit" 
+                    class="btn-save relative overflow-hidden group">
+              <span class="relative z-10 flex items-center">
+                <i class="fas fa-save mr-2 transition-transform group-hover:rotate-12"></i>
+                Enregistrer
+              </span>
+              <span class="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+            </button>
+            
+            <a href="{% url 'admin_utilisateurs' %}" 
+               class="btn-cancel relative overflow-hidden group">
+              <span class="relative z-10 flex items-center">
+                <i class="fas fa-times mr-2 transition-transform group-hover:rotate-180"></i>
+                Annuler
+              </span>
+              <span class="absolute inset-0 bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+  /* Styles personnalisés */
+  .form-group select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3e%3cpath d='M15.3 9.3a1 1 0 0 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4l3.3 3.29 3.3-3.3z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem;
+  }
+  
+  .btn-save {
+    @apply px-6 py-3 bg-blue-600 text-white font-medium rounded-xl shadow hover:shadow-md transition-all duration-300 flex items-center;
+  }
+  
+  .btn-cancel {
+    @apply px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-xl font-medium shadow hover:bg-gray-50 transition-all duration-300 flex items-center;
+  }
+  
+  /* Animation d'entrée */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+</style>
+
+<script>
+  // Animation au chargement
+  document.addEventListener('DOMContentLoaded', function() {
+    const card = document.querySelector('.max-w-md > div');
+    card.classList.add('opacity-0', 'translate-y-5');
+    
+    setTimeout(() => {
+      card.classList.add('transition-all', 'duration-500', 'ease-out');
+      card.classList.remove('opacity-0', 'translate-y-5');
+    }, 100);
+    
+    // Animation du sélecteur
+    const roleSelect = document.getElementById('role');
+    roleSelect.addEventListener('focus', function() {
+      this.parentNode.classList.add('ring-2', 'ring-blue-500', 'rounded-xl');
+    });
+    roleSelect.addEventListener('blur', function() {
+      this.parentNode.classList.remove('ring-2', 'ring-blue-500');
+    });
+  });
+</script>
 {% endblock %}

@@ -13,8 +13,19 @@ from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from .forms import ModifierProfilForm
 from django.views.decorators.http import require_POST
+from django.http import HttpResponseForbidden
 from django.contrib.admin.views.decorators import staff_member_required
 from decimal import Decimal
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
+import uuid
+from django.http import HttpResponse
+from django.conf import settings
+from .models import InscriptionEvenement
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from paypal.standard.forms import PayPalPaymentsForm
+from django.template.loader import render_to_string 
 def reserver_espace(request, espace_id):
     espace = get_object_or_404(Espace, id=espace_id)
     if request.method == 'POST':
@@ -24,24 +35,41 @@ def reserver_espace(request, espace_id):
             print("Formulaire valide")
             reservation = form.save(commit=False)
             duree = (reservation.date_fin - reservation.date_debut).total_seconds() / 3600
-            duree_decimal = Decimal(str(round(duree, 2)))  # conversion en Decimal
-            prix_horaire = espace.tarif_par_heure  
+            duree_decimal = Decimal(str(round(duree, 2)))
+            prix_horaire = espace.tarif_par_heure
             total = duree_decimal * prix_horaire
-            reservation.montant_total = float(total) 
+            reservation.montant_total = total.quantize(Decimal('0.00'))
             reservation.membre = request.user
             reservation.espace = espace
-            print("Durée:", duree_decimal)
-            print("Prix horaire:", prix_horaire)
-            print("Total calculé:", total)
-            print("Montant avant save:", reservation.montant_total)
-
             reservation.save()
-            return redirect('confirmation_reservation')
+            # Conversion MAD -> EUR (taux fixe ou dynamique)
+            taux_conversion = Decimal('11')  # 11 MAD = 1 EUR (exemple)
+            montant_en_eur = (reservation.montant_total / taux_conversion).quantize(Decimal('0.00'))
+            # Créer les données PayPal avec la bonne devise
+            paypal_dict = {
+                'business': settings.PAYPAL_TEST_EMAIL,
+                'amount': montant_en_eur,
+                'item_name': f"Réservation espace {espace.nom}",
+                'invoice': str(uuid.uuid4()),
+                'currency_code': 'EUR',  # PayPal sandbox accepte EUR, pas MAD
+                'notify_url': request.build_absolute_uri(reverse('paypal-ipn')),
+                'return_url': request.build_absolute_uri(reverse('paiement_reussi')),
+                'cancel_return': request.build_absolute_uri(reverse('paiement_annule')),
+            }
+            context = {
+                'reservation': reservation,
+                'montant_mad': reservation.montant_total,  # montant original en MAD
+                'montant_eur': montant_en_eur,  # montant converti en EUR
+                'paypal_dict': paypal_dict,
+                'paypal_url': 'https://www.sandbox.paypal.com/cgi-bin/webscr',
+                'paypal_email': settings.PAYPAL_TEST_EMAIL,
+            }
+            return render(request, 'paiement.html', context)
+        else:
+            print("Formulaire NON valide :", form.errors)
     else:
-        print("Formulaire NON valide :", form.errors)
         form = ReservationForm()
-        
-    return render(request, 'membre/reserver.html', {'form': form, 'espace': espace})
+    return render(request, 'membre/mes_reservations.html', {'form': form, 'espace': espace})
 def accueil(request):
     espaces = Espace.objects.all()
     utilisateur = None
@@ -86,8 +114,21 @@ def reserver_espace(request, espace_id):
 
 @login_required
 def mes_reservations(request):
-    reservations = Reservation.objects.filter(membre=request.user)
-    return render(request, 'membre/mes_reservations.html', {'reservations': reservations})
+    reservations = Reservation.objects.filter(membre=request.user).select_related('espace').prefetch_related('services_utilises')
+    
+    # Recalculer les montants si nécessaire (optionnel)
+    for res in reservations:
+        if res.montant_total == Decimal('0.00'):
+            res.calculer_montant_total()
+
+        # Ajouter une propriété temporaire pour indiquer si la réservation est terminée
+        res.terminee = res.date_fin < timezone.now()
+
+    context = {
+        'reservations': reservations,
+        'total_general': sum(res.montant_total for res in reservations)
+    }
+    return render(request, 'membre/mes_reservations.html', context)
 
 @login_required
 def detail_evenement(request, id):
@@ -117,7 +158,10 @@ def liste_utilisateurs(request):
     utilisateurs = Utilisateur.objects.all()
     return render(request, 'admin/utilisateurs.html', {'utilisateurs': utilisateurs})
 
-
+@login_required
+def liste_espaces(request):
+    espaces = Espace.objects.all()
+    return render(request, 'membre/liste_espaces.html', {'espaces': espaces})
 # ---------------------- VUES ADMIN ----------------------
 def est_admin(user):
     return user.is_authenticated and user.role == 'admin'
@@ -298,22 +342,50 @@ def liste_evenements(request):
         # Membre voit uniquement les événements validés
         evenements = Evenement.objects.filter(statut='valide').order_by('-date_debut')
     return render(request, 'evenements/liste_evenements.html', {'evenements': evenements})
+
 @login_required
 def inscription_evenement(request, evenement_id):
     evenement = get_object_or_404(Evenement, id=evenement_id)
 
-    if evenement.est_complet():
-        messages.error(request, "Cet événement est complet.")
-    elif evenement.statut != StatutEvenement.VALIDE:
-        messages.warning(request, "Cet événement n’est pas disponible.")
-    else:
-        if evenement.participants.filter(id=request.user.id).exists():
-            messages.info(request, "Vous êtes déjà inscrit.")
-        else:
-            evenement.inscrire_utilisateur(request.user)
-            messages.success(request, "Inscription réussie.")
+    # Vérifie si déjà inscrit (optionnel)
+    deja_inscrit = InscriptionEvenement.objects.filter(evenement=evenement, utilisateur=request.user).exists()
+    # if deja_inscrit:
+    #     messages.info(request, "Déjà inscrit")
+    #     return redirect('detail_evenement', evenement_id)
 
-    return redirect('liste_evenements')
+    # Crée l'inscription
+    inscription = InscriptionEvenement.objects.create(evenement=evenement, utilisateur=request.user)
+
+    # Génère une facture
+    facture_id = str(uuid.uuid4())
+
+    # Convertir le prix MAD -> EUR
+    taux_conversion = Decimal('11')  # 11 MAD = 1 EUR (exemple)
+    montant_eur = (Decimal(evenement.prix) / taux_conversion).quantize(Decimal('0.00'))
+
+    paypal_dict = {
+        'business': settings.PAYPAL_TEST_EMAIL,
+        'amount': montant_eur,
+        'item_name': f"Inscription événement {evenement.titre}",
+        'invoice': facture_id,
+        'currency_code': 'EUR',
+        'notify_url': request.build_absolute_uri(reverse('paypal-ipn')),
+        'return_url': request.build_absolute_uri(reverse('paiement_evenement_reussi', args=[inscription.id])),
+        'cancel_return': request.build_absolute_uri(reverse('liste_evenements')),
+    }
+
+    context = {
+        'evenement': evenement,
+        'inscription': inscription,
+        'facture_id': facture_id,
+        'paypal_url': 'https://www.sandbox.paypal.com/cgi-bin/webscr',
+        'paypal_email': settings.PAYPAL_TEST_EMAIL,
+        'montant_mad': evenement.prix,
+        'montant_eur': montant_eur,
+        'paypal_dict': paypal_dict,
+    }
+
+    return render(request, 'evenements/inscription_paiement.html', context)
 @user_passes_test(lambda u: u.is_authenticated and u.est_admin())
 def valider_evenement(request, evenement_id):
     evenement = get_object_or_404(Evenement, id=evenement_id)
@@ -347,3 +419,132 @@ def voir_inscrits(request, evenement_id):
 def admin_voir_reservations(request):
     reservations = Reservation.objects.select_related('utilisateur', 'espace').all().order_by('-date_debut')
     return render(request, 'admin/reservations.html', {'reservations': reservations})
+def paiement_reussi(request):
+    return HttpResponse(" Paiement réussi. Merci pour votre réservation.")
+
+def paiement_annule(request):
+    return HttpResponse(" Paiement annulé. Vous pouvez réessayer.")
+
+def payer_reservation(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id, membre=request.user)
+
+    # Convertir MAD en EUR (si nécessaire)
+    taux_conversion = Decimal('11')  # 11 MAD = 1 EUR
+    montant_en_eur = (reservation.montant_total / taux_conversion).quantize(Decimal('0.00'))
+
+    paypal_dict = {
+        'business': settings.PAYPAL_TEST_EMAIL,
+        'amount': montant_en_eur,
+        'item_name': f"Réservation espace {reservation.espace.nom}",
+        'invoice': str(reservation.id),
+        'currency_code': 'EUR',
+        'notify_url': request.build_absolute_uri(reverse('paypal-ipn')),
+        'return_url': request.build_absolute_uri(reverse('reservation_payee', args=[reservation.id])),
+        'cancel_return': request.build_absolute_uri(reverse('mes_reservations')),
+    }
+
+    form = PayPalPaymentsForm(initial=paypal_dict)
+
+    return render(request, 'paiement.html', {
+        'reservation': reservation,
+        'form': form,
+        'montant_mad': reservation.montant_total,
+        'montant_eur': montant_en_eur,
+        'paypal_url': settings.PAYPAL_URL,  # défini dans settings.py
+        'paypal_email': settings.PAYPAL_TEST_EMAIL,
+    })
+def reservation_payee(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id, membre=request.user)
+    reservation.status = "payé" 
+    return render(request, 'confirmation_paiement.html', {'reservation': reservation})
+
+@login_required
+def paiement_evenement_reussi(request, inscription_id):
+    inscription = get_object_or_404(InscriptionEvenement, id=inscription_id, utilisateur=request.user)
+
+    if not inscription.paiement_effectue:
+        inscription.paiement_effectue = True
+        inscription.save()
+
+    return render(request, 'evenements/paiement_reussi.html', {
+        'inscription': inscription
+    })
+def generer_facture_pdf(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id)
+
+    template = get_template('facture.html')
+    html = template.render({'reservation': reservation})
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="facture_{reservation.id}.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Erreur lors de la génération du PDF')
+    return response
+def retour_paypal(request):
+    reservation_id = request.GET.get('reservation_id')
+    
+    if not reservation_id:
+        messages.error(request, "Aucune réservation spécifiée.")
+        return redirect('home')  # Rediriger vers la page d'accueil ou une autre page
+
+    reservation = get_object_or_404(Reservation, id=reservation_id)
+
+    # Marquer la réservation comme payée (si ton modèle a ce champ)
+    if not reservation.is_paid:
+        reservation.is_paid = True
+        reservation.save()
+
+    messages.success(request, "Le paiement a été effectué avec succès.")
+
+    return render(request, 'confirmation_paiement.html', {
+        'reservation': reservation
+    })
+
+@login_required
+def annuler_reservation(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id)
+
+    # Vérifie que c'est bien le propriétaire
+    if reservation.membre != request.user:
+        return HttpResponseForbidden("Vous n'avez pas la permission d'annuler cette réservation.")
+
+    # On vérifie que la réservation est à venir (pas terminée)
+    if reservation.terminee:
+        # Optionnel : message d'erreur, ou redirection
+        return redirect('mes_reservations')  # ou une autre page
+
+    if request.method == 'POST':
+        reservation.delete()
+        # Optionnel : message de succès avec messages framework
+        return redirect('mes_reservations')
+
+    # Pour gérer le cas GET (ex: confirmation), on peut rediriger
+    return redirect('mes_reservations')
+
+@login_required
+def facture_evenement_pdf(request, inscription_id):
+    inscription = get_object_or_404(InscriptionEvenement, id=inscription_id, utilisateur=request.user)
+
+    if not inscription.paiement_effectue:
+        return HttpResponse("Paiement non effectué", status=403)
+
+    # Rendu HTML du template
+    html = render_to_string('evenements/facture_evenement.html', {
+        'inscription': inscription,
+        'evenement': inscription.evenement,
+        'utilisateur': request.user,
+        'montant': inscription.evenement.prix,
+    })
+
+    # Préparation de la réponse HTTP
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="facture_evenement_{inscription.id}.pdf"'
+
+    # Génération du PDF avec pisa
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    if pisa_status.err:
+        return HttpResponse("Une erreur est survenue lors de la génération du PDF", status=500)
+
+    return response

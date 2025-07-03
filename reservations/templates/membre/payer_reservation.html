@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}Paiement{% endblock %}
+{% block content %}
+
+<style>
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+    }
+    
+    /* Style général */
+    .payment-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .payment-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        padding-bottom: 15px;
+    }
+    
+    .payment-header h3 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .payment-header:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, #3498db, #2ecc71);
+        border-radius: 2px;
+    }
+    
+    .amount-display {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #27ae60;
+        text-align: center;
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        animation: pulse 2s infinite;
+    }
+    
+    .amount-display:before {
+        content: "→ ";
+        color: #3498db;
+    }
+    
+    .amount-display:after {
+        content: " ←";
+        color: #3498db;
+    }
+    
+    .payment-form {
+        margin-top: 2rem;
+    }
+    
+    .paypal-btn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #003087, #009cde);
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        margin-top: 1.5rem;
+    }
+    
+    .paypal-btn:hover {
+        background: linear-gradient(135deg, #00256e, #0085c6);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .paypal-btn:active {
+        transform: translateY(-1px);
+    }
+    
+    .paypal-icon {
+        margin-right: 10px;
+        font-size: 1.3rem;
+    }
+    
+    /* Effet de vague */
+    .paypal-btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+    
+    .paypal-btn:focus:not(:active)::after {
+        animation: ripple 1s ease-out;
+    }
+    
+    @keyframes ripple {
+        0% {
+            transform: scale(0, 0);
+            opacity: 0.5;
+        }
+        100% {
+            transform: scale(20, 20);
+            opacity: 0;
+        }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .payment-container {
+            padding: 1.5rem;
+            margin: 1rem;
+        }
+        
+        .amount-display {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+<!---------------------------------------------------------------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------------------------------------------------------------->
+<div class="payment-container">
+    <div class="payment-header">
+        <h3>Paiement pour la réservation de l’espace {{ reservation.espace.nom }}</h3>
+        <p>Confirmation de votre réservation</p>
+    </div>
+    
+    <div class="amount-display">
+        {{ montant_mad }} DHS ({{ montant_eur }} EUR)
+    </div>
+    
+    <div class="payment-details">
+        <p><i class="fas fa-check-circle text-success"></i> Réservation validée</p>
+        <p><i class="fas fa-calendar-alt text-primary"></i> Date : {{ reservation.date_debut|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <form action="{{ paypal_url }}" method="post" class="payment-form">
+        <input type="hidden" name="cmd" value="_xclick">
+        <input type="hidden" name="business" value="{{ paypal_email }}">
+        <input type="hidden" name="item_name" value="Réservation espace {{ reservation.espace.nom }}">
+        <input type="hidden" name="amount" value="{{ montant_eur }}">
+        <input type="hidden" name="currency_code" value="EUR">
+        <input type="hidden" name="invoice" value="{{ reservation.id }}">
+        <input type="hidden" name="notify_url" value="{{ form.initial.notify_url }}">
+        <input type="hidden" name="return" value="{{ form.initial.return_url }}">
+        <input type="hidden" name="cancel_return" value="{{ form.initial.cancel_return }}">
+        <button type="submit" class="paypal-btn">
+            <i class="fab fa-paypal paypal-icon"></i>
+            Payer avec PayPal
+        </button>
+    </form>
+
+    <div class="security-note text-center mt-4">
+        <p class="text-muted small">
+            <i class="fas fa-lock"></i> Paiement sécurisé via PayPal
+        </p>
+    </div>
+</div>
+
+<!---------------------------------------------------------------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------------------------------------------------------------->
+<!-- Font Awesome pour les icônes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+    // Animation supplémentaire au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const amountElement = document.querySelector('.amount-display');
+        
+        // Effet de surbrillance sur le montant
+        setTimeout(() => {
+            amountElement.style.boxShadow = '0 0 15px rgba(39, 174, 96, 0.4)';
+            setTimeout(() => {
+                amountElement.style.boxShadow = 'none';
+            }, 1000);
+        }, 500);
+    });
+</script>
+{% endblock %}

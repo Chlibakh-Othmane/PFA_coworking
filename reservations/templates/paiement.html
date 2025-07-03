@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% block title %}Confirmation de paiement{% endblock %}
+{% block content %}
+
+<style>
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes ripple {
+        0% { transform: scale(0); opacity: 0.5; }
+        100% { transform: scale(20); opacity: 0; }
+    }
+
+    /* Styles principaux */
+    .payment-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.6s ease-out;
+    }
+    
+    .payment-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        padding-bottom: 15px;
+    }
+    
+    .payment-header h2 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .payment-header:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, #3498db, #2ecc71);
+        border-radius: 2px;
+    }
+    
+    .amount-display {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #27ae60;
+        text-align: center;
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        animation: pulse 2s infinite;
+    }
+    
+    .payment-details {
+        background: #f1f8fe;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 8px 0;
+        border-bottom: 1px dashed #e0e0e0;
+    }
+    
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+    
+    .paypal-btn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #003087, #009cde);
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        margin-top: 1.5rem;
+    }
+    
+    .paypal-btn:hover {
+        background: linear-gradient(135deg, #00256e, #0085c6);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .paypal-btn:active {
+        transform: translateY(-1px);
+    }
+    
+    .paypal-btn::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+    
+    .paypal-btn:focus:not(:active)::after {
+        animation: ripple 1s ease-out;
+    }
+    
+    .security-note {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .payment-container {
+            padding: 1.5rem;
+            margin: 1rem;
+        }
+        
+        .amount-display {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="payment-container">
+    <div class="payment-header">
+        <h2><i class="fas fa-lock"></i> Confirmation de paiement</h2>
+        <p>Finalisez votre réservation</p>
+    </div>
+    
+    <div class="amount-display">
+        {{ reservation.montant_total|floatformat:2 }} MAD
+    </div>
+    
+    <div class="payment-details">
+        <div class="detail-item">
+            <span><i class="fas fa-map-marker-alt text-primary"></i> Espace :</span>
+            <strong>{{ reservation.espace.nom }}</strong>
+        </div>
+        <div class="detail-item">
+            <span><i class="fas fa-calendar-alt text-primary"></i> Date :</span>
+            <strong>{{ reservation.date_debut|date:"d/m/Y" }}</strong>
+        </div>
+        <div class="detail-item">
+            <span><i class="fas fa-clock text-primary"></i> Heure :</span>
+            <strong>{{ reservation.date_debut|time:"H:i" }} - {{ reservation.date_fin|time:"H:i" }}</strong>
+        </div>
+        <div class="detail-item">
+            <span><i class="fas fa-hourglass-half text-primary"></i> Durée :</span>
+            <strong>{{ reservation.duree }} heures</strong>
+        </div>
+    </div>
+
+    <form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post" class="payment-form">
+        {{ form.as_p }}
+        <button type="submit" class="paypal-btn">
+            <i class="fab fa-paypal"></i> Payer avec PayPal
+        </button>
+    </form>
+
+    <div class="security-note">
+        <p><i class="fas fa-shield-alt"></i> Transaction sécurisée - Vos données sont protégées</p>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Effet de surbrillance sur le montant
+        const amountDisplay = document.querySelector('.amount-display');
+        setTimeout(() => {
+            amountDisplay.style.boxShadow = '0 0 15px rgba(39, 174, 96, 0.4)';
+            setTimeout(() => {
+                amountDisplay.style.boxShadow = 'none';
+            }, 1000);
+        }, 500);
+    });
+</script>
+{% endblock %}

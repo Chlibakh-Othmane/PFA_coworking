@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Confirmation de la Réservation</h2>
+    <table class="table table-bordered mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Membre</th>
+                <th>Email</th>
+                <th>Espace réservé</th>
+                <th>Date début</th>
+                <th>Date fin</th>
+                <th>Durée (h)</th>
+                <th>Tarif (MAD/h)</th>
+                <th>Total (MAD)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ reservation.membre.first_name }} {{ reservation.membre.last_name }}</td>
+                <td>{{ reservation.membre.email }}</td>
+                <td>{{ reservation.espace.nom }}</td>
+                <td>{{ reservation.date_debut|date:"d/m/Y H:i" }}</td>
+                <td>{{ reservation.date_fin|date:"d/m/Y H:i" }}</td>
+                <td>{{ duree }}</td>
+                <td>{{ tarif }}</td>
+                <td>{{ total }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="mt-4">
+        <a href="{% url 'mes_reservations' %}" class="btn btn-primary">Voir mes réservations</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Facture Événement</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { text-align: center; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { border: 1px solid #aaa; padding: 10px; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Facture - Inscription Événement</h1>
+    <p><strong>Nom :</strong> {{ utilisateur.get_full_name }}</p>
+    <p><strong>Email :</strong> {{ utilisateur.email }}</p>
+    <p><strong>Événement :</strong> {{ evenement.titre }}</p>
+    <p><strong>Date :</strong> {{ evenement.date|date:"d/m/Y" }}</p>
+
+    <table>
+        <tr>
+            <th>Description</th>
+            <th>Montant (MAD)</th>
+        </tr>
+        <tr>
+            <td>Inscription à l'événement</td>
+            <td>{{ montant }}</td>
+        </tr>
+    </table>
+
+    <p style="margin-top: 30px;">Merci pour votre inscription !</p>
+</body>
+</html>

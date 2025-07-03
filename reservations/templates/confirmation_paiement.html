@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes confetti {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Styles principaux */
+    .confirmation-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2.5rem;
+        border-radius: 15px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.6s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .confetti {
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        background-color: #f0f;
+        opacity: 0;
+    }
+    
+    .confirmation-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        padding-bottom: 15px;
+    }
+    
+    .confirmation-header h2 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .confirmation-header:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, #2ecc71, #3498db);
+        border-radius: 2px;
+    }
+    
+    .success-icon {
+        font-size: 4rem;
+        color: #2ecc71;
+        margin-bottom: 1.5rem;
+        animation: pulse 2s infinite;
+    }
+    
+    .confirmation-details {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin: 2rem 0;
+    }
+    
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed #e0e0e0;
+    }
+    
+    .detail-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #7f8c8d;
+    }
+    
+    .detail-value {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+    
+    .amount-highlight {
+        color: #27ae60;
+        font-weight: 700;
+    }
+    
+    .btn-download {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 25px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #3498db, #2ecc71);
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+    }
+    
+    .btn-download:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+    }
+    
+    .btn-download i {
+        margin-right: 10px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .confirmation-container {
+            padding: 1.5rem;
+            margin: 1rem;
+        }
+        
+        .success-icon {
+            font-size: 3rem;
+        }
+    }
+</style>
+
+<div class="confirmation-container">
+    <!-- Confetti éléments générés par JS -->
+    
+    <div class="text-center confirmation-header">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>Paiement confirmé !</h2>
+        <p class="lead">Merci pour votre confiance, {{ reservation.membre.first_name }} !</p>
+    </div>
+    
+    <div class="confirmation-details">
+        <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Espace :</span>
+            <span class="detail-value">{{ reservation.espace.nom }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-calendar-alt"></i> Date :</span>
+            <span class="detail-value">{{ reservation.date_debut|date:"d/m/Y" }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-clock"></i> Heure :</span>
+            <span class="detail-value">{{ reservation.date_debut|time:"H:i" }} - {{ reservation.date_fin|time:"H:i" }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label"><i class="fas fa-coins"></i> Montant :</span>
+            <span class="detail-value amount-highlight">{{ reservation.montant_total|floatformat:2 }} MAD</span>
+        </div>
+    </div>
+    
+    <div class="text-center">
+        <a href="{% url 'generer_facture' reservation.id %}" class="btn-download">
+            <i class="fas fa-file-pdf"></i> Télécharger la facture
+        </a>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Création de confettis
+        const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f1c40f', '#9b59b6'];
+        const container = document.querySelector('.confirmation-container');
+        
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.top = '100%';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.width = Math.random() * 10 + 5 + 'px';
+            confetti.style.height = confetti.style.width;
+            confetti.style.animation = `confetti ${Math.random() * 3 + 2}s linear forwards`;
+            confetti.style.animationDelay = Math.random() * 0.5 + 's';
+            container.appendChild(confetti);
+        }
+        
+        // Effet de surbrillance sur le montant
+        const amount = document.querySelector('.amount-highlight');
+        setTimeout(() => {
+            amount.style.textShadow = '0 0 10px rgba(39, 174, 96, 0.5)';
+            setTimeout(() => {
+                amount.style.textShadow = 'none';
+            }, 1000);
+        }, 500);
+    });
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from .models import Reservation, Avis, Espace, Utilisateur,Evenement
-
+from django.utils import timezone
 # Connexion avec email + mot de passe
 class ConnexionForm(forms.Form):
     email = forms.EmailField()
@@ -29,16 +29,34 @@ class ConnexionForm(forms.Form):
     def get_user(self):
         return self.user
 
-# Formulaire de réservation
 class ReservationForm(forms.ModelForm):
+    date_debut = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+        input_formats=['%Y-%m-%dT%H:%M']
+    )
+    date_fin = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+        input_formats=['%Y-%m-%dT%H:%M']
+    )
+
     class Meta:
         model = Reservation
         fields = ['date_debut', 'date_fin']
-        widgets = {
-            'date_debut': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'date_fin': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-        }
-# Formulaire d'avis
+
+    def clean(self):
+        cleaned_data = super().clean()
+        date_debut = cleaned_data.get('date_debut')
+        date_fin = cleaned_data.get('date_fin')
+
+        now = timezone.now()
+
+        # Vérifie si la date_debut est au moins demain
+        if date_debut and date_debut <= now:
+            self.add_error('date_debut', "La date de début doit être ultérieure à aujourd'hui.")
+
+        # Vérifie que la date_fin est après la date_debut
+        if date_debut and date_fin and date_fin <= date_debut:
+            self.add_error('date_fin', "La date de fin doit être postérieure à la date de début.")# Formulaire d'avis
 class AvisForm(forms.ModelForm):
     class Meta:
         model = Avis
@@ -90,12 +108,11 @@ class InscriptionForm(forms.ModelForm):
 
     class Meta:
         model = Utilisateur
-        fields = ['first_name', 'last_name', 'email', 'mot_de_passe', 'role', 'photoProfil']
+        fields = ['first_name', 'last_name', 'email', 'mot_de_passe',  'photoProfil']
         labels = {
             'first_name': 'Nom',
             'last_name': 'Prénom',
             'photoProfil': 'Photo de profil',
-            'role': 'Rôle'
         }
         widgets = {
             'photoProfil': forms.ClearableFileInput(attrs={'accept': 'image/*'})
@@ -137,6 +154,35 @@ class ModifierProfilForm(forms.ModelForm):
             'photoProfil': 'Photo de profil'
         }
 class EvenementForm(forms.ModelForm):
+    date_debut = forms.SplitDateTimeField(
+        widget=forms.SplitDateTimeWidget(
+            date_attrs={'type': 'date', 'class': 'datepicker'},
+            time_attrs={'type': 'time', 'class': 'timepicker'},
+            date_format='%Y-%m-%d',
+            time_format='%H:%M'
+        )
+    )
+    date_fin = forms.SplitDateTimeField(
+        widget=forms.SplitDateTimeWidget(
+            date_attrs={'type': 'date', 'class': 'datepicker'},
+            time_attrs={'type': 'time', 'class': 'timepicker'},
+            date_format='%Y-%m-%d',
+            time_format='%H:%M'
+        )
+    )
+
     class Meta:
         model = Evenement
         exclude = ['statut', 'organisateur', 'participants', 'reservations']
+        widgets = {
+            'services': forms.TextInput(attrs={'class': 'form-input'}),
+            'description': forms.Textarea(attrs={'rows': 4}),
+        }
+class PayPalForm(forms.Form):
+    cmd = forms.CharField(widget=forms.HiddenInput(), initial="_xclick")
+    business = forms.EmailField(widget=forms.HiddenInput(), initial="ton_compte-business@xxx.com")
+    item_name = forms.CharField(widget=forms.HiddenInput())
+    amount = forms.DecimalField(widget=forms.HiddenInput())
+    currency_code = forms.CharField(widget=forms.HiddenInput(), initial="MAD")
+    return_url = forms.CharField(widget=forms.HiddenInput())  
+    cancel_return = forms.CharField(widget=forms.HiddenInput())

@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .profile-container {
+        max-width: 800px;  /* Conteneur plus large */
+        margin: 2rem auto;
+        padding: 3rem;  /* Plus d'espace intérieur */
+        border-radius: 16px;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+    
+    .profile-header {
+        text-align: center;
+        margin-bottom: 3rem;  /* Plus d'espace sous le titre */
+        position: relative;
+    }
+    
+    .profile-header h2 {
+        font-weight: 700;
+        color: #2c3e50;
+        position: relative;
+        display: inline-block;
+        font-size: 2rem;  /* Titre plus grand */
+    }
+    
+    .profile-header h2::after {
+        content: '';
+        position: absolute;
+        bottom: -12px;  /* Ligne décorative plus basse */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;  /* Ligne plus longue */
+        height: 4px;
+        background: linear-gradient(90deg, #2ecc71, #27ae60);
+        border-radius: 2px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #34495e;
+        margin-bottom: 0.8rem;  /* Plus d'espace sous les labels */
+        display: flex;
+        align-items: center;
+        font-size: 1.1rem;  /* Texte plus grand */
+    }
+    
+    .form-label i {
+        margin-right: 10px;  /* Plus d'espace autour des icônes */
+        color: #7f8c8d;
+        font-size: 1.2rem;
+    }
+    
+    .form-control {
+        border: 2px solid #ecf0f1;
+        border-radius: 10px;
+        padding: 14px 20px;  /* Champs plus hauts */
+        transition: all 0.3s;
+        background-color: #f8f9fa;
+        font-size: 1rem;
+        width: 100%;  /* Pleine largeur */
+        margin-bottom: 1.5rem;  /* Plus d'espace entre les champs */
+    }
+    
+    .form-control:focus {
+        border-color: #2ecc71;
+        box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
+        background-color: white;
+        outline: none;
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        border: none;
+        padding: 14px 35px;  /* Bouton plus large */
+        border-radius: 50px;
+        color: white;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 7px 20px rgba(46, 204, 113, 0.4);
+    }
+    
+    .btn-save:active {
+        transform: translateY(0);
+    }
+    
+    .btn-cancel {
+        background: white;
+        border: 2px solid #bdc3c7;
+        color: #7f8c8d;
+        font-weight: 600;
+        padding: 14px 35px;  /* Bouton plus large */
+        border-radius: 50px;
+        transition: all 0.3s;
+        font-size: 1.1rem;
+    }
+    
+    .btn-cancel:hover {
+        border-color: #95a5a6;
+        background: #f8f9fa;
+    }
+    
+    .profile-picture-container {
+        display: flex;
+        align-items: center;
+        margin-top: 20px;  /* Plus d'espace au-dessus */
+        margin-bottom: 30px;
+    }
+    
+    .profile-picture {
+        width: 150px;  /* Photo plus grande */
+        height: 150px;
+        border-radius: 10px;  /* Carré avec coins arrondis */
+        object-fit: cover;
+        border: 3px solid #e0e0e0;
+        margin-right: 30px;  /* Plus d'espace à droite */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .current-photo-label {
+        font-size: 1.1rem;
+        color: #7f8c8d;
+        font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 2rem;
+            margin: 1rem;
+        }
+        
+        .profile-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .profile-picture {
+            width: 120px;
+            height: 120px;
+            margin-right: 20px;
+        }
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <h2><i class="fas fa-user-cog me-2"></i>Modifier mon profil</h2>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-4">
+            <label for="first_name" class="form-label">
+                <i class="fas fa-user"></i>Prénom
+            </label>
+            <input type="text" class="form-control" id="first_name" name="first_name" 
+                   value="{{ utilisateur.first_name }}" required>
+        </div>
+        
+        <div class="mb-4">
+            <label for="last_name" class="form-label">
+                <i class="fas fa-user-tag"></i>Nom
+            </label>
+            <input type="text" class="form-control" id="last_name" name="last_name" 
+                   value="{{ utilisateur.last_name }}" required>
+        </div>
+        
+        <div class="mb-4">
+            <label for="email" class="form-label">
+                <i class="fas fa-envelope"></i>Email
+            </label>
+            <input type="email" class="form-control" id="email" name="email" 
+                   value="{{ utilisateur.email }}" required>
+        </div>
+        
+        <div class="mb-4">
+            <label for="photoProfil" class="form-label">
+                <i class="fas fa-camera"></i>Photo de profil
+            </label>
+            <input type="file" class="form-control" id="photoProfil" name="photoProfil">
+            
+            {% if utilisateur.photoProfil %}
+            <div class="profile-picture-container">
+                <img src="{{ utilisateur.photoProfil.url }}" alt="Photo actuelle" class="profile-picture">
+                <span class="current-photo-label">Photo actuelle</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="d-flex justify-content-between mt-5">
+            <a href="{% url 'profil_admin' %}" class="btn btn-cancel">
+                <i class="fas fa-times me-2"></i>Annuler
+            </a>
+            <button type="submit" class="btn btn-save">
+                <i class="fas fa-save me-2"></i>Enregistrer
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Font Awesome pour les icônes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+    // Animation au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.querySelector('.profile-container');
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(30px)';
+        
+        setTimeout(() => {
+            container.style.transition = 'all 0.5s ease-out';
+            container.style.opacity = '1';
+            container.style.transform = 'translateY(0)';
+        }, 100);
+    });
+</script>
+
+{% endblock %}

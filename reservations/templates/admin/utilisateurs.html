@@ -1,38 +1,98 @@
 {% extends 'base.html' %}
-{% block content %}
-<div class="container mt-4">
-    <h2>Liste des utilisateurs</h2>
+{% load static %}
 
-    <table class="table table-hover mt-3">
-        <thead class="table-dark">
-            <tr>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Email</th>
-                <th>Rôle</th>
-                <th>Inscription</th>
-                <th>Actions</th> 
-            </tr>
-        </thead>
-        <tbody>
-            {% for u in utilisateurs %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-10 px-6 lg:px-16">
+
+    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8 animate_animated animate_fadeInDown">
+        👥 Liste des Utilisateurs
+    </h2>
+
+    <div class="overflow-x-auto animate_animated animate_fadeInUp">
+        <table class="min-w-full bg-white rounded-xl shadow-xl overflow-hidden">
+            <thead class="bg-blue-500 text-white text-left">
                 <tr>
-                    <td>{{ u.last_name }}</td>
-                    <td>{{ u.first_name }}</td>
-                    <td>{{ u.email }}</td>
-                    <td>{{ u.get_role_display }}</td>
-                    <td>{{ u.dateInscription }}</td>
-                    <td>
-                        <a href="{% url 'modifier_role_utilisateur' u.id %}" class="btn btn-sm btn-warning">Modifier rôle</a>
-                        <a href="{% url 'supprimer_utilisateur' u.id %}" class="btn btn-sm btn-danger">Supprimer</a>
+                    <th class="px-6 py-4">Nom</th>
+                    <th class="px-6 py-4">Prénom</th>
+                    <th class="px-6 py-4">Email</th>
+                    <th class="px-6 py-4">Rôle</th>
+                    <th class="px-6 py-4">Inscription</th>
+                    <th class="px-6 py-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-700">
+                {% for u in utilisateurs %}
+                <tr class="hover:bg-blue-50 transition-all duration-300">
+                    <td class="px-6 py-3 font-semibold">{{ u.last_name }}</td>
+                    <td class="px-6 py-3">{{ u.first_name }}</td>
+                    <td class="px-6 py-3">{{ u.email }}</td>
+                    <td class="px-6 py-3">{{ u.get_role_display }}</td>
+                    <td class="px-6 py-3">{{ u.dateInscription }}</td>
+                    <td class="px-6 py-3">
+                        <div class="flex flex-nowrap gap-2">
+                            <a href="{% url 'modifier_role_utilisateur' u.id %}" 
+                               class="inline-flex items-center px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-md transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                                <i class="fas fa-edit mr-2"></i> Modifier
+                            </a>
+                            <a href="{% url 'supprimer_utilisateur' u.id %}" 
+                               class="inline-flex items-center px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                                <i class="fas fa-trash-alt mr-2"></i> Supprimer
+                            </a>
+                        </div>
                     </td>
                 </tr>
-            {% empty %}
+                {% empty %}
                 <tr>
-                    <td colspan="6">Aucun utilisateur trouvé.</td>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">Aucun utilisateur trouvé.</td>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- Font Awesome pour les icônes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+
+<!-- Animate.css CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+<style>
+    table th, table td {
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Styles spécifiques pour les boutons d'action */
+    .flex.gap-2 {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+    }
+
+    /* Animation au survol des boutons */
+    .hover\:-translate-y-1:hover {
+        transform: translateY(-3px);
+    }
+
+    .hover\:shadow-md:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Responsive pour petits écrans */
+    @media (max-width: 640px) {
+        .flex.gap-2 {
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        
+        table td, table th {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    }
+</style>
 {% endblock %}
